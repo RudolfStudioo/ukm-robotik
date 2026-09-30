@@ -12,7 +12,12 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
   const motion = hasGsap && !reduce;
-  if (hasGsap) gsap.registerPlugin(ScrollTrigger);
+  if (hasGsap) {
+    gsap.registerPlugin(ScrollTrigger);
+    ScrollTrigger.config({ ignoreMobileResize: true }); // bar alamat HP naik-turun tidak memicu refresh
+  }
+  // Browser tidak boleh memulihkan posisi scroll lama sendiri (bikin loncat saat pin dihitung)
+  if ('scrollRestoration' in history) history.scrollRestoration = 'manual';
 
   const pending = []; // promise tiap foto dari JSON (selesai = berhasil ATAU gagal)
 
@@ -93,13 +98,35 @@
     });
   }
 
+  /* ---------- pendaftaran: status dari kuota vs terdaftar ---------- */
+  function pendaftaran(data) {
+    const sec = $('#pendaftaran'), d = data.pendaftaran;
+    if (!sec) return;
+    if (!d) { sec.hidden = true; return; }
+    const kuota = Number(d.kuota) || 0, isi = Number(d.terdaftar) || 0;
+    const penuh = kuota > 0 && isi >= kuota;
+    const badge = $('#daftarBadge'), btn = $('#daftarBtn');
+    $('#daftarCount').textContent = isi + ' / ' + kuota;
+    $('#daftarBar').style.width = (kuota ? Math.min(100, (isi / kuota) * 100) : 0) + '%';
+    badge.textContent = penuh ? d.badgePenuh : d.badgeBuka;
+    badge.className = 'inline-block rounded-full px-3 py-1 text-xs font-bold ' + (penuh ? 'bg-flame text-white' : 'bg-sun text-ink');
+    btn.textContent = penuh ? d.tombolPenuh : d.tombolBuka;
+    if (penuh || !d.formUrl) {
+      btn.removeAttribute('href');
+      btn.setAttribute('aria-disabled', 'true');
+      btn.classList.add('opacity-50', 'pointer-events-none');
+    } else {
+      btn.href = d.formUrl;
+    }
+  }
+
   /* ---------- hero: foto latar ganti tiap 5 detik ---------- */
   function hero() {
     const wrap = $('#heroSlides'), dotsBox = $('#heroDots'), empty = $('#heroEmpty');
     if (!wrap) return;
     $$('.hero-slide', wrap).forEach(s => {
       const im = $('img', s);
-      if (!im || im.dataset.ok !== '1') s.remove(); // foto hilang/rusak: buang, jangan jadi slide kosong
+      if (!im || im.dataset.ok !== '1') s.remove(); // foto hilang/rusak: buang
     });
     const slides = $$('.hero-slide', wrap);
     if (empty) empty.hidden = slides.length > 0;
@@ -138,15 +165,41 @@
     m.addEventListener('click', e => { if (e.target.closest('a')) set(false); });
   }
 
+  /* ---------- kartu pengurus: sentuh = aktif (untuk HP) ---------- */
+  function pengurusCards() {
+    const cards = $$('#pengurus .pengurus-card');
+    cards.forEach(c => c.addEventListener('click', () => {
+      const on = c.classList.contains('is-active');
+      cards.forEach(x => x.classList.remove('is-active'));
+      if (!on) c.classList.add('is-active');
+    }));
+  }
+
+  /* ---------- klik link #anchor: smooth HANYA saat diklik (bukan lewat CSS) ---------- */
+  function anchors() {
+    document.addEventListener('click', e => {
+      const a = e.target.closest('a[href^="#"]');
+      if (!a) return;
+      const id = a.getAttribute('href');
+      const t = id.length > 1 ? document.querySelector(id) : null;
+      if (!t) return;
+      e.preventDefault();
+      const top = id === '#hero' ? 0 : t.getBoundingClientRect().top + window.scrollY - 64;
+      window.scrollTo({ top, behavior: reduce ? 'auto' : 'smooth' });
+    });
+  }
+
   /* ---------- tiles horizontal (pin + scrub) ---------- */
   function tilesInit(data) {
     const pin = $('#tiles'), track = $('#tilesTrack');
     if (!pin || !track) return;
+    const bar = $('#tilesBar'), hint = $('.tiles-hint', pin);
     const t = data.tiles || {};
     if (!t.judul && !t.sub && !(Array.isArray(t.items) && t.items.length)) { pin.hidden = true; return; }
 
     const dist = () => Math.max(0, track.scrollWidth - window.innerWidth);
     if (!motion || dist() < 10) { // fallback: geser manual
+      if (hint) hint.hidden = true;
       pin.style.height = 'auto';
       pin.style.overflowX = 'auto';
       pin.style.padding = '4rem 0';
@@ -154,7 +207,10 @@
     }
     const tw = gsap.to(track, {
       x: () => -dist(), ease: 'none',
-      scrollTrigger: { trigger: pin, start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true }
+      scrollTrigger: {
+        trigger: pin, start: 'top top', end: () => '+=' + dist(), pin: true, scrub: 0.6, anticipatePin: 1, invalidateOnRefresh: true,
+        onUpdate: self => { if (bar) bar.style.transform = 'scaleX(' + self.progress.toFixed(3) + ')'; }
+      }
     });
     $$('.tile', track).forEach(tile => {
       const st = { trigger: tile, containerAnimation: tw, start: 'left right', end: 'right left', scrub: true };
@@ -189,15 +245,25 @@
     gsap.to(els, { opacity: 1, x: 0, y: 0, scale: 1, duration: 1, ease: 'power3.out', stagger: 0.12, delay: 0.15, clearProps: 'transform,opacity' });
   }
 
+  /* ---------- hero: teks geser ke kiri + makin transparan saat scroll ke bawah ---------- */
+  function heroText(el, s) {
+    const tl = gsap.timeline({
+      defaults: { ease: 'none' },
+      scrollTrigger: { trigger: '#hero', start: 'top top', end: 'bottom top', scrub: true, invalidateOnRefresh: true }
+    });
+    tl.fromTo(el, { x: 0, y: 0 }, { x: () => -window.innerWidth * 0.35, y: s, duration: 1 }, 0);
+    tl.fromTo(el, { opacity: 1 }, { opacity: 0, duration: 0.7 }, 0);
+  }
+
   /* ---------- parallax ---------- */
   function parallax() {
     $$('[data-speed]').forEach(el => {
       const s = parseFloat(el.dataset.speed);
       if (!s || el.closest('[hidden]')) return;
-      const inHero = !!el.closest('#hero');
-      gsap.fromTo(el, { y: inHero ? 0 : -s }, {
+      if (el.closest('#hero')) { heroText(el, s); return; }
+      gsap.fromTo(el, { y: -s }, {
         y: s, ease: 'none',
-        scrollTrigger: { trigger: inHero ? '#hero' : el, start: inHero ? 'top top' : 'top bottom', end: 'bottom top', scrub: true }
+        scrollTrigger: { trigger: el, start: 'top bottom', end: 'bottom top', scrub: true }
       });
     });
     $$('img[data-par]').forEach(im => {
@@ -205,6 +271,39 @@
       gsap.fromTo(im, { yPercent: -7 }, {
         yPercent: 7, ease: 'none',
         scrollTrigger: { trigger: im.closest('.slot') || im, start: 'top bottom', end: 'bottom top', scrub: true }
+      });
+    });
+    /* Foto memudar (tepi lembut + transparan) dari kiri ke kanan saat di-scroll ke bawah.
+       Kalau foto ada di dalam card ([data-wipe-card]), yang memudar SELURUH card supaya garis card tidak tertinggal.
+       Kartu pengurus dikecualikan (sudah punya animasi geser sendiri). */
+    const wiped = new Set();
+    $$('.slot').forEach(slot => {
+      if (slot.classList.contains('slot-round') || slot.closest('.tile, .logo-box, #loader, #nav, #kontak, [data-exit], .pengurus-item')) return;
+      if (!$('img[data-par]', slot)) return;
+      const el = slot.closest('[data-wipe-card]') || slot;
+      if (wiped.has(el)) return;
+      wiped.add(el);
+      el.classList.add('wipe'); // gaya mask + opacity ada di index.html (.wipe)
+      gsap.fromTo(el, { '--p': 0 }, {
+        '--p': 1, ease: 'none', immediateRender: false,
+        scrollTrigger: { trigger: el, start: 'center 40%', end: 'bottom 10%', scrub: true }
+      });
+    });
+    /* Kartu pengurus: ganjil keluar ke kiri, genap ke kanan, sambil memudar */
+    $$('#pengurus .pengurus-item').forEach((item, i) => {
+      const dir = i % 2 ? 1 : -1;
+      gsap.fromTo(item, { x: 0, opacity: 1 }, {
+        x: () => dir * window.innerWidth * 0.5, opacity: 0, ease: 'none', immediateRender: false,
+        scrollTrigger: { trigger: item, start: 'center 35%', end: 'bottom 5%', scrub: true, invalidateOnRefresh: true }
+      });
+    });
+    /* Baris dosen (foto + teks): keluar ke samping sambil memudar, seperti teks hero.
+       data-exit="left" -> ke kiri, data-exit="right" -> ke kanan (atur di index.html) */
+    $$('[data-exit]').forEach(row => {
+      const dir = row.dataset.exit === 'right' ? 1 : -1;
+      gsap.fromTo(row, { x: 0, opacity: 1 }, {
+        x: () => dir * window.innerWidth * 0.35, opacity: 0, ease: 'none', immediateRender: false,
+        scrollTrigger: { trigger: row, start: 'center 40%', end: 'bottom 15%', scrub: true, invalidateOnRefresh: true }
       });
     });
     const bg = $('#heroBg');
@@ -228,7 +327,7 @@
         const ny = ((e.clientY - r.top) / r.height) * 2 - 1;
         gsap.to(box, { rotationY: nx * 18, rotationX: -ny * 18, duration: 0.4, ease: 'power3.out', overwrite: 'auto' });
         cards.forEach(c => {
-          const d = parseFloat(c.dataset.depth) || 20; // beda kedalaman = beda jarak geser
+          const d = parseFloat(c.dataset.depth) || 20;
           gsap.to(c, { x: -nx * d, y: -ny * d, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
         });
       });
@@ -240,6 +339,43 @@
     box.addEventListener('click', () => {
       gsap.fromTo(box, { scale: 0.85 }, { scale: 1, duration: 1, ease: 'elastic.out(1, 0.3)', overwrite: 'auto' });
     });
+
+    /* gyroscope (HP): kemiringan HP = kemiringan kotak + card bergeser beda kedalaman */
+    if (window.matchMedia('(pointer: coarse)').matches && 'DeviceOrientationEvent' in window) {
+      const clamp = (v, a, b) => Math.max(a, Math.min(b, v));
+      let allowed = typeof DeviceOrientationEvent.requestPermission !== 'function'; // iOS butuh izin
+      let visible = false, listening = false, base = null, last = null, gRaf = 0;
+
+      const apply = () => {
+        gRaf = 0;
+        const nx = clamp(last.g / 25, -1, 1);
+        const ny = clamp(last.b / 25, -1, 1);
+        gsap.to(box, { rotationY: nx * 18, rotationX: -ny * 18, duration: 0.5, ease: 'power3.out', overwrite: 'auto' });
+        cards.forEach(c => {
+          const d = parseFloat(c.dataset.depth) || 20;
+          gsap.to(c, { x: -nx * d, y: -ny * d, duration: 0.6, ease: 'power3.out', overwrite: 'auto' });
+        });
+      };
+      const onTilt = e => {
+        if (e.gamma == null || e.beta == null) return;
+        if (!base) base = { g: e.gamma, b: e.beta };
+        last = { g: e.gamma - base.g, b: e.beta - base.b };
+        if (!gRaf) gRaf = requestAnimationFrame(apply);
+      };
+      const sync = () => { // sensor hanya aktif selama logo terlihat (hemat baterai)
+        const want = allowed && visible;
+        if (want && !listening) { base = null; window.addEventListener('deviceorientation', onTilt, { passive: true }); listening = true; }
+        if (!want && listening) { window.removeEventListener('deviceorientation', onTilt); listening = false; }
+      };
+      if ('IntersectionObserver' in window) {
+        new IntersectionObserver(([en]) => { visible = en.isIntersecting; sync(); }).observe(stage);
+      } else { visible = true; sync(); }
+      if (!allowed) { // iOS: sentuh logo sekali untuk mengizinkan sensor
+        box.addEventListener('click', () => {
+          DeviceOrientationEvent.requestPermission().then(r => { allowed = r === 'granted'; sync(); }).catch(() => {});
+        }, { once: true });
+      }
+    }
   }
 
   /* ---------- loader ---------- */
@@ -270,23 +406,31 @@
 
       render(document, data);
       tables(data);
+      pendaftaran(data);
       if (data.site && data.site.nama) document.title = data.site.nama;
 
       const total = pending.length;
       let n = 0;
       pending.forEach(p => p.then(() => { n++; if (bar) bar.style.width = Math.round((n / Math.max(total, 1)) * 100) + '%'; }));
-      // tunggu semua foto (berhasil/gagal), maksimal 7 detik, minimal 0,7 detik biar tidak berkedip
-      await Promise.all([Promise.race([Promise.all(pending), sleep(7000)]), sleep(700)]);
+      // tunggu semua foto (berhasil/gagal) maks 7 dtk, dan font, minimal 0,7 dtk biar tidak berkedip
+      const fontsReady = document.fonts && document.fonts.ready ? Promise.race([document.fonts.ready, sleep(3000)]) : Promise.resolve();
+      await Promise.all([Promise.race([Promise.all(pending), sleep(7000)]), fontsReady, sleep(700)]);
       if (bar) bar.style.width = '100%';
 
       hero();
       nav();
+      anchors();
+      pengurusCards();
       logo();
       tilesInit(data); // harus dibuat sebelum trigger lain di bawahnya (pin spacing)
       if (motion) {
         heroEls = anims();
         parallax();
         ScrollTrigger.refresh();
+        // Ukur ulang sekali lagi setelah semua aset (font, CSS Tailwind CDN, gambar) benar-benar selesai
+        if (document.readyState !== 'complete') {
+          window.addEventListener('load', () => ScrollTrigger.refresh(), { once: true });
+        }
       }
     } catch (err) {
       console.error(err);
