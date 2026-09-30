@@ -1,0 +1,104 @@
+{
+  "site": {
+    "nama": "Robotics Mulia",
+    "logo": "img/logo.png",
+    "loading": "Loading",
+    "footerCopy": "© 2026 Robotics Mulia. Seluruh hak cipta dilindungi."
+  },
+  "nav": [
+    { "label": "Tentang", "href": "#tentang" },
+    { "label": "Dosen", "href": "#dosen" },
+    { "label": "Pengurus", "href": "#pengurus" },
+    { "label": "Prestasi", "href": "#prestasi" },
+    { "label": "Jadwal", "href": "#jadwal" },
+    { "label": "Galeri", "href": "#galeri" },
+    { "label": "Project", "href": "#project" },
+    { "label": "Kontak", "href": "#kontak" }
+  ],
+  "hero": {
+    "judul": "Isi judul besar UKM di sini",
+    "sub": "Isi subjudul singkat tentang UKM Robotics Mulia di sini.",
+    "images": ["img/hero-1.jpg", "img/hero-2.jpg", "img/hero-3.jpg"],
+    "cta1": { "label": "Gabung Sekarang", "url": "#kontak" },
+    "cta2": { "label": "Lihat Project", "url": "#project" },
+    "scroll": "Scroll"
+  },
+  "tiles": {
+    "judul": "Isi judul sorotan di sini",
+    "sub": "Isi kalimat pengantar sorotan di sini.",
+    "items": [
+      { "judul": "Judul Sorotan 1", "teks": "Isi teks sorotan 1 di sini.", "foto": "img/tile-1.jpg" },
+      { "judul": "Judul Sorotan 2", "teks": "Isi teks sorotan 2 di sini.", "foto": "img/tile-2.jpg" },
+      { "judul": "Judul Sorotan 3", "teks": "Isi teks sorotan 3 di sini.", "foto": "img/tile-3.jpg" },
+      { "judul": "Judul Sorotan 4", "teks": "Isi teks sorotan 4 di sini.", "foto": "img/tile-4.jpg" }
+    ]
+  },
+  "about": {
+    "judul": "Tentang Robotics Mulia",
+    "teks": "Isi penjelasan tentang UKM di sini.",
+    "visiJudul": "Visi",
+    "visi": "Isi visi UKM di sini",
+    "misiJudul": "Misi",
+    "misi": ["Isi misi pertama di sini", "Isi misi kedua di sini", "Isi misi ketiga di sini"]
+  },
+  "logoInteraktif": {
+    "foto": "img/logo-hover.jpg",
+    "cards": [
+      { "ikon": "cpu", "judul": "Judul Card 1", "teks": "Teks singkat card 1" },
+      { "ikon": "code", "judul": "Judul Card 2", "teks": "Teks singkat card 2" },
+      { "ikon": "users", "judul": "Judul Card 3", "teks": "Teks singkat card 3" }
+    ]
+  },
+  "dosen": {
+    "judul": "Dosen Penanggung Jawab",
+    "nama": "Nama Dosen",
+    "jabatan": "Jabatan Dosen",
+    "keterangan": "Isi keterangan singkat tentang dosen di sini.",
+    "foto": "img/dosen.jpg"
+  },
+  "pengurus": {
+    "judul": "Struktur Pengurus",
+    "anggota": [
+      { "nama": "Nama Ketua", "jabatan": "Ketua", "foto": "img/pengurus-1.jpg" },
+      { "nama": "Nama Wakil", "jabatan": "Wakil Ketua", "foto": "img/pengurus-2.jpg" },
+      { "nama": "Nama Sekretaris", "jabatan": "Sekretaris", "foto": "img/pengurus-3.jpg" },
+      { "nama": "Nama Bendahara", "jabatan": "Bendahara", "foto": "img/pengurus-4.jpg" }
+    ]
+  },
+  "prestasi": {
+    "judul": "Prestasi UKM",
+    "daftar": [
+      { "judul": "Judul Prestasi 1", "tahun": "2025", "deskripsi": "Isi deskripsi prestasi 1 di sini.", "foto": "img/prestasi-1.jpg" },
+      { "judul": "Judul Prestasi 2", "tahun": "2024", "deskripsi": "Isi deskripsi prestasi 2 di sini.", "foto": "img/prestasi-2.jpg" },
+      { "judul": "Judul Prestasi 3", "tahun": "2023", "deskripsi": "Isi deskripsi prestasi 3 di sini.", "foto": "img/prestasi-3.jpg" }
+    ]
+  },
+  "jadwal": {
+    "judul": "Jadwal Latihan",
+    "kolom": { "pertemuan": "Pertemuan", "tanggal": "Hari & Tanggal", "materi": "Materi" },
+    "baris": []
+  },
+  "galeri": {
+    "judul": "Galeri Aktivitas",
+    "foto": [
+      "img/galeri-1.jpg", "img/galeri-2.jpg", "img/galeri-3.jpg", "img/galeri-4.jpg", "img/galeri-5.jpg",
+      "img/galeri-6.jpg", "img/galeri-7.jpg", "img/galeri-8.jpg", "img/galeri-9.jpg", "img/galeri-10.jpg"
+    ]
+  },
+  "project": {
+    "judul": "Project Kami",
+    "daftar": [
+      { "judul": "Judul Project 1", "deskripsi": "Isi deskripsi project 1 di sini.", "foto": "img/project-1.jpg", "tim": ["Nama Anggota 1", "Nama Anggota 2", "Nama Anggota 3"] },
+      { "judul": "Judul Project 2", "deskripsi": "Isi deskripsi project 2 di sini.", "foto": "img/project-2.jpg", "tim": ["Nama Anggota 1", "Nama Anggota 2"] },
+      { "judul": "Judul Project 3", "deskripsi": "Isi deskripsi project 3 di sini.", "foto": "img/project-3.jpg", "tim": ["Nama Anggota 1", "Nama Anggota 2", "Nama Anggota 3"] }
+    ]
+  },
+  "footer": {
+    "judul": "Ikuti kami",
+    "sosmed": [
+      { "nama": "Instagram", "url": "https://instagram.com/" },
+      { "nama": "YouTube", "url": "https://youtube.com/" },
+      { "nama": "TikTok", "url": "https://tiktok.com/" }
+    ]
+  }
+}
