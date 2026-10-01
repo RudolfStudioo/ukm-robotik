@@ -12,6 +12,10 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
   const motion = hasGsap && !reduce;
+
+  const SUPABASE_URL = 'https://layiqqvtgxfqiumqxqec.supabase.co'; // Ganti dengan URL Project Supabase Anda
+  const SUPABASE_ANON_KEY = 'sb_publishable_EUunAjYYibF2lWCgLZch9Q_J_f3Uekt';     // Ganti dengan anon/public key Supabase Anda
+
   if (hasGsap) {
     gsap.registerPlugin(ScrollTrigger);
     ScrollTrigger.config({ ignoreMobileResize: true }); // bar alamat HP naik-turun tidak memicu refresh
@@ -395,13 +399,28 @@
       let data = {};
       try {
         const ctl = new AbortController();
-        const to = setTimeout(() => ctl.abort(), 4000);
-        const res = await fetch('data.json', { signal: ctl.signal, cache: 'no-cache' });
+        const to = setTimeout(() => ctl.abort(), 5000);
+        
+        // Ambil data dari Supabase REST API
+        const res = await fetch(`${SUPABASE_URL}/rest/v1/site_config?id=eq.1&select=content`, {
+          signal: ctl.signal,
+          headers: {
+            'apikey': SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
+          }
+        });
         clearTimeout(to);
-        if (res.ok) data = await res.json();
-        else console.warn('data.json tidak ditemukan (status ' + res.status + '). Menampilkan kerangka kosong.');
+
+        if (res.ok) {
+          const result = await res.json();
+          if (result && result.length > 0) {
+            data = result[0].content;
+          }
+        } else {
+          console.warn('Gagal mengambil data dari Supabase (status ' + res.status + ').');
+        }
       } catch (err) {
-        console.warn('data.json tidak bisa dimuat. Pakai Live Server dan cek isi JSON-nya. Menampilkan kerangka kosong.', err);
+        console.warn('Koneksi ke Supabase bermasalah. Menampilkan kerangka.', err);
       }
 
       render(document, data);
