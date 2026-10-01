@@ -1,0 +1,745 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Admin Panel - Robotics Mulia</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <style>
+    .img-preview { object-fit: cover; border-radius: 0.5rem; }
+  </style>
+</head>
+<body class="bg-gray-900 text-gray-100 min-h-screen pb-32">
+
+  <!-- LOGIN SECTION -->
+  <div id="loginSection" class="flex min-h-screen items-center justify-center p-4">
+    <div class="w-full max-w-md bg-gray-800 p-8 rounded-2xl shadow-xl border border-gray-700">
+      <h1 class="text-2xl font-bold text-yellow-400 mb-2">Admin Panel UKM</h1>
+      <p class="text-gray-400 text-sm mb-6">Masuk menggunakan akun pengurus untuk mengelola website.</p>
+      
+      <div class="space-y-4">
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Email</label>
+          <input id="email" type="email" placeholder="admin@roboticsmulia.ac.id" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:border-yellow-400">
+        </div>
+        <div>
+          <label class="block text-xs font-semibold uppercase text-gray-400 mb-1">Password</label>
+          <input id="password" type="password" placeholder="••••••••" class="w-full p-3 rounded-lg bg-gray-700 border border-gray-600 focus:outline-none focus:border-yellow-400">
+        </div>
+        <button onclick="login()" class="w-full bg-yellow-400 text-gray-900 font-bold py-3 rounded-lg hover:bg-yellow-300 transition">Masuk</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- DASHBOARD SECTION -->
+  <div id="dashboardSection" class="hidden max-w-6xl mx-auto p-4 md:p-8">
+    <div class="flex justify-between items-center mb-8 border-b border-gray-800 pb-5">
+      <div>
+        <h1 class="text-3xl font-extrabold text-white">Pengelola Website UKM</h1>
+        <p class="text-sm text-gray-400">Ubah seluruh isi teks, jadwal, dan foto website tanpa menyentuh kode.</p>
+      </div>
+      <button onclick="logout()" class="px-4 py-2 bg-red-600/20 text-red-400 border border-red-600/40 rounded-lg font-medium hover:bg-red-600 hover:text-white transition">Keluar</button>
+    </div>
+
+    <form id="adminForm" onsubmit="saveData(event)" class="space-y-10">
+      
+      <!-- 1. HEADER & HERO BANNER -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <h2 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2">1. Header & Banner Utama (Hero)</h2>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Nama UKM / Website</label>
+            <input type="text" id="site-nama" onchange="setValueByPath('site.nama', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Teks Tombol Scroll</label>
+            <input type="text" id="hero-scroll" onchange="setValueByPath('hero.scroll', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Utama Banner</label>
+          <input type="text" id="hero-judul" onchange="setValueByPath('hero.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Subjudul Banner</label>
+          <textarea id="hero-sub" rows="2" onchange="setValueByPath('hero.sub', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg"></textarea>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4 pt-2">
+          <div class="bg-gray-700/40 p-4 rounded-xl border border-gray-600 space-y-2">
+            <span class="text-xs font-bold text-yellow-400 uppercase">Tombol Utama (CTA 1)</span>
+            <input type="text" id="hero-cta1-label" placeholder="Label Tombol" onchange="setValueByPath('hero.cta1.label', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <input type="text" id="hero-cta1-url" placeholder="URL / Target Anchor (#kontak)" onchange="setValueByPath('hero.cta1.url', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+          </div>
+          <div class="bg-gray-700/40 p-4 rounded-xl border border-gray-600 space-y-2">
+            <span class="text-xs font-bold text-yellow-400 uppercase">Tombol Sekunder (CTA 2)</span>
+            <input type="text" id="hero-cta2-label" placeholder="Label Tombol" onchange="setValueByPath('hero.cta2.label', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <input type="text" id="hero-cta2-url" placeholder="URL / Target Anchor (#project)" onchange="setValueByPath('hero.cta2.url', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+          </div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-700">
+          <label class="block text-sm font-bold text-white mb-3">Foto Slideshow Banner (3 Foto)</label>
+          <div id="heroImagesContainer" class="grid md:grid-cols-3 gap-4"></div>
+        </div>
+      </div>
+
+      <!-- 2. TENTANG KAMI, VISI & MISI -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <h2 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2">2. Tentang UKM, Visi & Misi</h2>
+        
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Tentang</label>
+          <input type="text" id="about-judul" onchange="setValueByPath('about.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Deskripsi Singkat UKM</label>
+          <textarea id="about-teks" rows="3" onchange="setValueByPath('about.teks', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg"></textarea>
+        </div>
+
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Visi</label>
+            <input type="text" id="about-visiJudul" onchange="setValueByPath('about.visiJudul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Misi</label>
+            <input type="text" id="about-misiJudul" onchange="setValueByPath('about.misiJudul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Isi Visi</label>
+          <textarea id="about-visi" rows="2" onchange="setValueByPath('about.visi', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg"></textarea>
+        </div>
+
+        <!-- LIST MISI DINAMIS -->
+        <div class="space-y-3 pt-2">
+          <div class="flex justify-between items-center">
+            <label class="block text-xs font-bold text-yellow-400 uppercase">Poin-poin Misi</label>
+            <button type="button" onclick="addMisiItem()" class="px-3 py-1 bg-yellow-400 text-gray-900 font-bold text-xs rounded hover:bg-yellow-300">Tambah Poin Misi</button>
+          </div>
+          <div id="misiContainer" class="space-y-2"></div>
+        </div>
+
+        <div class="pt-4 border-t border-gray-700 grid md:grid-cols-2 gap-6">
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center gap-4">
+            <img id="prev-site-logo" src="" class="w-20 h-20 img-preview bg-gray-800 border border-gray-600 flex-shrink-0">
+            <div class="space-y-2 flex-1">
+              <label class="block text-sm font-semibold">Logo Utama Website</label>
+              <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-site-logo', 'site.logo')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+            </div>
+          </div>
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 flex items-center gap-4">
+            <img id="prev-logo-hover" src="" class="w-20 h-20 img-preview bg-gray-800 border border-gray-600 flex-shrink-0">
+            <div class="space-y-2 flex-1">
+              <label class="block text-sm font-semibold">Foto Hover Logo (Tentang)</label>
+              <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-logo-hover', 'logoInteraktif.foto')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1.5 file:px-3 file:rounded-md file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. TILES SOROTAN -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <h2 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2">3. Sorotan (Tiles Horizontal)</h2>
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Sorotan</label>
+            <input type="text" id="tiles-judul" onchange="setValueByPath('tiles.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Petunjuk Scroll (Tampilan HP)</label>
+            <input type="text" id="tiles-petunjuk" onchange="setValueByPath('tiles.petunjuk', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Subjudul / Pengantar Sorotan</label>
+          <input type="text" id="tiles-sub" onchange="setValueByPath('tiles.sub', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+        <div id="tilesContainer" class="grid md:grid-cols-2 gap-6 pt-2"></div>
+      </div>
+
+      <!-- 4. DOSEN PENANGGUNG JAWAB & PEMBIMBING -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <h2 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2">4. Dosen Pembimbing</h2>
+        <div class="grid md:grid-cols-2 gap-6">
+          
+          <!-- Dosen 1 -->
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 space-y-3">
+            <span class="text-xs font-bold text-yellow-400 uppercase">Dosen Utama</span>
+            <div class="flex items-center gap-4">
+              <img id="prev-dosen1" src="" class="w-24 h-32 img-preview bg-gray-800 border border-gray-600 flex-shrink-0">
+              <div class="space-y-2 flex-1">
+                <input type="text" id="dosen1-judul" placeholder="Judul Seksi" onchange="setValueByPath('dosen.judul', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+                <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-dosen1', 'dosen.foto')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+              </div>
+            </div>
+            <input type="text" id="dosen1-nama" placeholder="Nama Dosen" onchange="setValueByPath('dosen.nama', this.value)" class="w-full p-2 text-sm bg-gray-800 border border-gray-600 rounded">
+            <input type="text" id="dosen1-jabatan" placeholder="Jabatan" onchange="setValueByPath('dosen.jabatan', this.value)" class="w-full p-2 text-sm bg-gray-800 border border-gray-600 rounded">
+            <textarea id="dosen1-keterangan" rows="2" placeholder="Keterangan singkat" onchange="setValueByPath('dosen.keterangan', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded"></textarea>
+          </div>
+
+          <!-- Dosen 2 -->
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 space-y-3">
+            <span class="text-xs font-bold text-yellow-400 uppercase">Dosen Pembimbing 2</span>
+            <div class="flex items-center gap-4">
+              <img id="prev-dosen2" src="" class="w-24 h-32 img-preview bg-gray-800 border border-gray-600 flex-shrink-0">
+              <div class="space-y-2 flex-1">
+                <input type="text" id="dosen2-judul" placeholder="Judul Seksi" onchange="setValueByPath('dosen2.judul', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+                <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-dosen2', 'dosen2.foto')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+              </div>
+            </div>
+            <input type="text" id="dosen2-nama" placeholder="Nama Dosen 2" onchange="setValueByPath('dosen2.nama', this.value)" class="w-full p-2 text-sm bg-gray-800 border border-gray-600 rounded">
+            <input type="text" id="dosen2-jabatan" placeholder="Jabatan" onchange="setValueByPath('dosen2.jabatan', this.value)" class="w-full p-2 text-sm bg-gray-800 border border-gray-600 rounded">
+            <textarea id="dosen2-keterangan" rows="2" placeholder="Keterangan singkat" onchange="setValueByPath('dosen2.keterangan', this.value)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded"></textarea>
+          </div>
+
+        </div>
+      </div>
+
+      <!-- 5. STRUKTUR PENGURUS -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+          <h2 class="text-xl font-bold text-yellow-400">5. Struktur Pengurus</h2>
+          <button type="button" onclick="addPengurusItem()" class="px-3 py-1 bg-yellow-400 text-gray-900 font-bold text-xs rounded hover:bg-yellow-300">Tambah Anggota</button>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Pengurus</label>
+          <input type="text" id="pengurus-judul" onchange="setValueByPath('pengurus.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+        <div id="pengurusContainer" class="grid md:grid-cols-2 gap-6"></div>
+      </div>
+
+      <!-- 6. JADWAL LATIHAN (TABLE EDITOR) -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+          <div>
+            <h2 class="text-xl font-bold text-yellow-400">6. Jadwal Latihan</h2>
+            <p class="text-xs text-gray-400">Atur tabel pertemuan dan materi latihan anggota.</p>
+          </div>
+          <button type="button" onclick="addJadwalRow()" class="px-3 py-1 bg-yellow-400 text-gray-900 font-bold text-xs rounded hover:bg-yellow-300">Tambah Pertemuan</button>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Jadwal</label>
+            <input type="text" id="jadwal-judul" onchange="setValueByPath('jadwal.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Nama Kolom 1</label>
+            <input type="text" id="jadwal-kolom-pertemuan" onchange="setValueByPath('jadwal.kolom.pertemuan', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Nama Kolom 2</label>
+            <input type="text" id="jadwal-kolom-materi" onchange="setValueByPath('jadwal.kolom.materi', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+        </div>
+
+        <div class="space-y-3 pt-2">
+          <span class="block text-xs font-bold text-yellow-400 uppercase">Daftar Baris Jadwal</span>
+          <div id="jadwalBarisContainer" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- 7. PRESTASI -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+          <h2 class="text-xl font-bold text-yellow-400">7. Prestasi UKM</h2>
+          <button type="button" onclick="addPrestasiItem()" class="px-3 py-1 bg-yellow-400 text-gray-900 font-bold text-xs rounded hover:bg-yellow-300">Tambah Prestasi</button>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Prestasi</label>
+          <input type="text" id="prestasi-judul" onchange="setValueByPath('prestasi.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+        <div id="prestasiContainer" class="grid md:grid-cols-3 gap-6"></div>
+      </div>
+
+      <!-- 8. GALERI AKTIVITAS -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <h2 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2">8. Galeri Aktivitas (10 Slot)</h2>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Galeri</label>
+          <input type="text" id="galeri-judul" onchange="setValueByPath('galeri.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+        <div id="galeriContainer" class="grid sm:grid-cols-2 md:grid-cols-5 gap-4"></div>
+      </div>
+
+      <!-- 9. PROJECT KAMI -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <div class="flex justify-between items-center border-b border-gray-700 pb-2">
+          <h2 class="text-xl font-bold text-yellow-400">9. Project Kami</h2>
+          <button type="button" onclick="addProjectItem()" class="px-3 py-1 bg-yellow-400 text-gray-900 font-bold text-xs rounded hover:bg-yellow-300">Tambah Project</button>
+        </div>
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Seksi Project</label>
+          <input type="text" id="project-judul" onchange="setValueByPath('project.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+        <div id="projectContainer" class="grid md:grid-cols-2 gap-6"></div>
+      </div>
+
+      <!-- 10. FOOTER & ALAMAT KONTAK -->
+      <div class="bg-gray-800 p-6 rounded-2xl border border-gray-700 space-y-6">
+        <h2 class="text-xl font-bold text-yellow-400 border-b border-gray-700 pb-2">10. Footer, Alamat & Kontak</h2>
+        
+        <div class="grid md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Judul Footer Banner</label>
+            <input type="text" id="footer-judul" onchange="setValueByPath('footer.judul', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Nama Kampus</label>
+            <input type="text" id="footer-kampus" onchange="setValueByPath('footer.kampus', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Deskripsi Ringkas Footer</label>
+          <textarea id="footer-deskripsi" rows="2" onchange="setValueByPath('footer.deskripsi', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg"></textarea>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Alamat Lengkap</label>
+          <textarea id="footer-alamat" rows="2" onchange="setValueByPath('footer.alamat', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg"></textarea>
+        </div>
+
+        <div class="grid md:grid-cols-3 gap-4">
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Nomor Telepon</label>
+            <input type="text" id="footer-telp" onchange="setValueByPath('footer.telp', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">Label Tombol Maps</label>
+            <input type="text" id="footer-mapLabel" onchange="setValueByPath('footer.mapLabel', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+          <div>
+            <label class="block text-xs font-semibold text-gray-400 mb-1">URL Google Maps</label>
+            <input type="text" id="footer-mapUrl" onchange="setValueByPath('footer.mapUrl', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+          </div>
+        </div>
+
+        <div>
+          <label class="block text-xs font-semibold text-gray-400 mb-1">Hak Cipta Footer (Copyright)</label>
+          <input type="text" id="site-footerCopy" onchange="setValueByPath('site.footerCopy', this.value)" class="w-full p-2.5 text-sm bg-gray-700 border border-gray-600 rounded-lg">
+        </div>
+
+        <!-- SOSIAL MEDIA -->
+        <div class="space-y-3 pt-2">
+          <div class="flex justify-between items-center">
+            <span class="block text-xs font-bold text-yellow-400 uppercase">Tautan Media Sosial</span>
+            <button type="button" onclick="addSosmedItem()" class="px-3 py-1 bg-yellow-400 text-gray-900 font-bold text-xs rounded hover:bg-yellow-300">Tambah Sosmed</button>
+          </div>
+          <div id="sosmedContainer" class="space-y-2"></div>
+        </div>
+      </div>
+
+      <!-- TOMBOL SIMPAN FIXED -->
+      <div class="fixed bottom-0 left-0 right-0 bg-gray-900/90 backdrop-blur p-4 border-t border-gray-800 flex justify-center z-50">
+        <button type="submit" id="saveBtn" class="w-full max-w-xl bg-green-500 hover:bg-green-400 text-gray-900 font-extrabold px-8 py-3.5 rounded-xl transition shadow-2xl text-center">
+          Simpan Semua Perubahan
+        </button>
+      </div>
+
+    </form>
+  </div>
+
+  <script>
+    const SUPABASE_URL = 'https://layiqqvtgxfqiumqxqec.supabase.co'; // Ganti dengan URL Supabase Anda
+    const SUPABASE_ANON_KEY = 'sb_publishable_EUunAjYYibF2lWCgLZch9Q_J_f3Uekt';     // Ganti dengan ANON Key Anda
+    
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+    let fullConfig = {};
+    const uploadQueue = {};
+
+    window.addEventListener('DOMContentLoaded', async () => {
+      const { data: { session } } = await db.auth.getSession();
+      if (session) showDashboard();
+    });
+
+    async function login() {
+      const email = document.getElementById('email').value;
+      const password = document.getElementById('password').value;
+      const { error } = await db.auth.signInWithPassword({ email, password });
+      
+      if (error) alert('Login Gagal: ' + error.message);
+      else showDashboard();
+    }
+
+    async function logout() {
+      await db.auth.signOut();
+      location.reload();
+    }
+
+    function handleFileSelect(input, previewId, jsonPath) {
+      if (input.files && input.files[0]) {
+        const file = input.files[0];
+        const reader = new FileReader();
+        reader.onload = function(e) {
+          document.getElementById(previewId).src = e.target.result;
+        };
+        reader.readAsDataURL(file);
+        uploadQueue[jsonPath] = file;
+      }
+    }
+
+    function setValueByPath(path, value) {
+      const parts = path.split('.');
+      let current = fullConfig;
+      for (let i = 0; i < parts.length - 1; i++) {
+        if (!current[parts[i]]) current[parts[i]] = {};
+        current = current[parts[i]];
+      }
+      current[parts[parts.length - 1]] = value;
+    }
+
+    async function showDashboard() {
+      document.getElementById('loginSection').classList.add('hidden');
+      document.getElementById('dashboardSection').classList.remove('hidden');
+
+      const { data, error } = await db.from('site_config').select('content').eq('id', 1).single();
+      if (error) return alert('Gagal memuat data dari Supabase: ' + error.message);
+
+      fullConfig = data.content;
+
+      // Populate Input Teks Tunggal
+      document.getElementById('site-nama').value = fullConfig.site?.nama || '';
+      document.getElementById('site-footerCopy').value = fullConfig.site?.footerCopy || '';
+      
+      document.getElementById('hero-judul').value = fullConfig.hero?.judul || '';
+      document.getElementById('hero-sub').value = fullConfig.hero?.sub || '';
+      document.getElementById('hero-scroll').value = fullConfig.hero?.scroll || '';
+      document.getElementById('hero-cta1-label').value = fullConfig.hero?.cta1?.label || '';
+      document.getElementById('hero-cta1-url').value = fullConfig.hero?.cta1?.url || '';
+      document.getElementById('hero-cta2-label').value = fullConfig.hero?.cta2?.label || '';
+      document.getElementById('hero-cta2-url').value = fullConfig.hero?.cta2?.url || '';
+
+      document.getElementById('about-judul').value = fullConfig.about?.judul || '';
+      document.getElementById('about-teks').value = fullConfig.about?.teks || '';
+      document.getElementById('about-visiJudul').value = fullConfig.about?.visiJudul || '';
+      document.getElementById('about-visi').value = fullConfig.about?.visi || '';
+      document.getElementById('about-misiJudul').value = fullConfig.about?.misiJudul || '';
+
+      document.getElementById('prev-site-logo').src = fullConfig.site?.logo || '';
+      document.getElementById('prev-logo-hover').src = fullConfig.logoInteraktif?.foto || '';
+
+      document.getElementById('tiles-judul').value = fullConfig.tiles?.judul || '';
+      document.getElementById('tiles-sub').value = fullConfig.tiles?.sub || '';
+      document.getElementById('tiles-petunjuk').value = fullConfig.tiles?.petunjuk || '';
+
+      document.getElementById('prev-dosen1').src = fullConfig.dosen?.foto || '';
+      document.getElementById('dosen1-judul').value = fullConfig.dosen?.judul || '';
+      document.getElementById('dosen1-nama').value = fullConfig.dosen?.nama || '';
+      document.getElementById('dosen1-jabatan').value = fullConfig.dosen?.jabatan || '';
+      document.getElementById('dosen1-keterangan').value = fullConfig.dosen?.keterangan || '';
+
+      document.getElementById('prev-dosen2').src = fullConfig.dosen2?.foto || '';
+      document.getElementById('dosen2-judul').value = fullConfig.dosen2?.judul || '';
+      document.getElementById('dosen2-nama').value = fullConfig.dosen2?.nama || '';
+      document.getElementById('dosen2-jabatan').value = fullConfig.dosen2?.jabatan || '';
+      document.getElementById('dosen2-keterangan').value = fullConfig.dosen2?.keterangan || '';
+
+      document.getElementById('pengurus-judul').value = fullConfig.pengurus?.judul || '';
+      document.getElementById('jadwal-judul').value = fullConfig.jadwal?.judul || '';
+      document.getElementById('jadwal-kolom-pertemuan').value = fullConfig.jadwal?.kolom?.pertemuan || '';
+      document.getElementById('jadwal-kolom-materi').value = fullConfig.jadwal?.kolom?.materi || '';
+
+      document.getElementById('prestasi-judul').value = fullConfig.prestasi?.judul || '';
+      document.getElementById('galeri-judul').value = fullConfig.galeri?.judul || '';
+      document.getElementById('project-judul').value = fullConfig.project?.judul || '';
+
+      document.getElementById('footer-judul').value = fullConfig.footer?.judul || '';
+      document.getElementById('footer-deskripsi').value = fullConfig.footer?.deskripsi || '';
+      document.getElementById('footer-kampus').value = fullConfig.footer?.kampus || '';
+      document.getElementById('footer-alamat').value = fullConfig.footer?.alamat || '';
+      document.getElementById('footer-telp').value = fullConfig.footer?.telp || '';
+      document.getElementById('footer-mapLabel').value = fullConfig.footer?.mapLabel || '';
+      document.getElementById('footer-mapUrl').value = fullConfig.footer?.mapUrl || '';
+
+      // Render Dynamic Lists
+      renderHeroImages();
+      renderMisi();
+      renderTiles();
+      renderPengurus();
+      renderJadwal();
+      renderPrestasi();
+      renderGaleri();
+      renderProject();
+      renderSosmed();
+    }
+
+    // RENDER FUNCTIONS
+    function renderHeroImages() {
+      const container = document.getElementById('heroImagesContainer');
+      container.innerHTML = '';
+      const images = fullConfig.hero?.images || [];
+      images.forEach((imgUrl, index) => {
+        const path = `hero.images.${index}`;
+        container.innerHTML += `
+          <div class="bg-gray-700/50 p-3 rounded-xl border border-gray-600 space-y-2">
+            <span class="text-xs font-bold text-yellow-400 uppercase">Slide Foto ${index + 1}</span>
+            <img id="prev-hero-${index}" src="${imgUrl}" class="w-full h-28 img-preview bg-gray-800 border border-gray-600">
+            <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-hero-${index}', '${path}')" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+          </div>
+        `;
+      });
+    }
+
+    function renderMisi() {
+      const container = document.getElementById('misiContainer');
+      container.innerHTML = '';
+      const misi = fullConfig.about?.misi || [];
+      misi.forEach((item, index) => {
+        container.innerHTML += `
+          <div class="flex items-center gap-2">
+            <input type="text" value="${item}" onchange="fullConfig.about.misi[${index}] = this.value" class="flex-1 p-2 text-xs bg-gray-700 border border-gray-600 rounded">
+            <button type="button" onclick="removeMisiItem(${index})" class="px-2.5 py-2 bg-red-600/30 text-red-400 hover:bg-red-600 hover:text-white rounded text-xs">Hapus</button>
+          </div>
+        `;
+      });
+    }
+
+    function addMisiItem() {
+      if (!fullConfig.about.misi) fullConfig.about.misi = [];
+      fullConfig.about.misi.push('Isi poin misi baru di sini');
+      renderMisi();
+    }
+
+    function removeMisiItem(index) {
+      fullConfig.about.misi.splice(index, 1);
+      renderMisi();
+    }
+
+    function renderTiles() {
+      const container = document.getElementById('tilesContainer');
+      container.innerHTML = '';
+      const items = fullConfig.tiles?.items || [];
+      items.forEach((item, index) => {
+        const path = `tiles.items.${index}.foto`;
+        container.innerHTML += `
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 space-y-3">
+            <div class="flex items-center gap-4">
+              <img id="prev-tile-${index}" src="${item.foto}" class="w-24 h-20 img-preview bg-gray-800 border border-gray-600 flex-shrink-0">
+              <div class="space-y-2 flex-1">
+                <input type="text" value="${item.judul}" onchange="fullConfig.tiles.items[${index}].judul = this.value" placeholder="Judul Tile" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+                <textarea rows="2" onchange="fullConfig.tiles.items[${index}].teks = this.value" placeholder="Teks Tile" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">${item.teks}</textarea>
+              </div>
+            </div>
+            <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-tile-${index}', '${path}')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+          </div>
+        `;
+      });
+    }
+
+    function renderPengurus() {
+      const container = document.getElementById('pengurusContainer');
+      container.innerHTML = '';
+      const anggota = fullConfig.pengurus?.anggota || [];
+      anggota.forEach((item, index) => {
+        const path = `pengurus.anggota.${index}.foto`;
+        container.innerHTML += `
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-yellow-400 uppercase">Anggota ${index + 1}</span>
+              <button type="button" onclick="removePengurusItem(${index})" class="text-xs text-red-400 hover:underline">Hapus</button>
+            </div>
+            <div class="flex items-center gap-4">
+              <img id="prev-pengurus-${index}" src="${item.foto}" class="w-20 h-20 img-preview bg-gray-800 border border-gray-600 flex-shrink-0">
+              <div class="space-y-2 flex-1">
+                <input type="text" value="${item.jabatan}" onchange="fullConfig.pengurus.anggota[${index}].jabatan = this.value" placeholder="Jabatan" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+                <input type="text" value="${item.nama}" onchange="fullConfig.pengurus.anggota[${index}].nama = this.value" placeholder="Nama Anggota" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+              </div>
+            </div>
+            <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-pengurus-${index}', '${path}')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+          </div>
+        `;
+      });
+    }
+
+    function addPengurusItem() {
+      if (!fullConfig.pengurus.anggota) fullConfig.pengurus.anggota = [];
+      fullConfig.pengurus.anggota.push({ nama: "Nama Anggota", jabatan: "Jabatan", foto: "img/pengurus-1.jpg" });
+      renderPengurus();
+    }
+
+    function removePengurusItem(index) {
+      fullConfig.pengurus.anggota.splice(index, 1);
+      renderPengurus();
+    }
+
+    function renderJadwal() {
+      const container = document.getElementById('jadwalBarisContainer');
+      container.innerHTML = '';
+      const baris = fullConfig.jadwal?.baris || [];
+      baris.forEach((item, index) => {
+        container.innerHTML += `
+          <div class="flex items-center gap-2 bg-gray-700/40 p-2 rounded-lg border border-gray-600">
+            <input type="text" value="${item.pertemuan}" placeholder="Pertemuan (mis. Pertemuan 1)" onchange="fullConfig.jadwal.baris[${index}].pertemuan = this.value" class="w-1/3 p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <input type="text" value="${item.materi}" placeholder="Materi Latihan" onchange="fullConfig.jadwal.baris[${index}].materi = this.value" class="flex-1 p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <button type="button" onclick="removeJadwalRow(${index})" class="px-2.5 py-2 bg-red-600/30 text-red-400 hover:bg-red-600 hover:text-white rounded text-xs">Hapus</button>
+          </div>
+        `;
+      });
+    }
+
+    function addJadwalRow() {
+      if (!fullConfig.jadwal.baris) fullConfig.jadwal.baris = [];
+      fullConfig.jadwal.baris.push({ pertemuan: "Pertemuan " + (fullConfig.jadwal.baris.length + 1), materi: "Materi Baru" });
+      renderJadwal();
+    }
+
+    function removeJadwalRow(index) {
+      fullConfig.jadwal.baris.splice(index, 1);
+      renderJadwal();
+    }
+
+    function renderPrestasi() {
+      const container = document.getElementById('prestasiContainer');
+      container.innerHTML = '';
+      const daftar = fullConfig.prestasi?.daftar || [];
+      daftar.forEach((item, index) => {
+        const path = `prestasi.daftar.${index}.foto`;
+        container.innerHTML += `
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-yellow-400 uppercase">Prestasi ${index + 1}</span>
+              <button type="button" onclick="removePrestasiItem(${index})" class="text-xs text-red-400 hover:underline">Hapus</button>
+            </div>
+            <img id="prev-prestasi-${index}" src="${item.foto}" class="w-full h-28 img-preview bg-gray-800 border border-gray-600">
+            <input type="text" value="${item.tahun}" onchange="fullConfig.prestasi.daftar[${index}].tahun = this.value" placeholder="Tahun" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <input type="text" value="${item.judul}" onchange="fullConfig.prestasi.daftar[${index}].judul = this.value" placeholder="Judul Prestasi" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <textarea rows="2" onchange="fullConfig.prestasi.daftar[${index}].deskripsi = this.value" placeholder="Deskripsi" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">${item.deskripsi}</textarea>
+            <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-prestasi-${index}', '${path}')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+          </div>
+        `;
+      });
+    }
+
+    function addPrestasiItem() {
+      if (!fullConfig.prestasi.daftar) fullConfig.prestasi.daftar = [];
+      fullConfig.prestasi.daftar.push({ judul: "Judul Prestasi", tahun: "2026", deskripsi: "Deskripsi singkat", foto: "img/prestasi-1.jpg" });
+      renderPrestasi();
+    }
+
+    function removePrestasiItem(index) {
+      fullConfig.prestasi.daftar.splice(index, 1);
+      renderPrestasi();
+    }
+
+    function renderGaleri() {
+      const container = document.getElementById('galeriContainer');
+      container.innerHTML = '';
+      const foto = fullConfig.galeri?.foto || [];
+      foto.forEach((imgUrl, index) => {
+        const path = `galeri.foto.${index}`;
+        container.innerHTML += `
+          <div class="bg-gray-700/50 p-3 rounded-xl border border-gray-600 space-y-2">
+            <span class="text-xs font-bold text-yellow-400 uppercase">Slot ${index + 1}</span>
+            <img id="prev-galeri-${index}" src="${imgUrl}" class="w-full h-24 img-preview bg-gray-800 border border-gray-600">
+            <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-galeri-${index}', '${path}')" class="block w-full text-xs text-gray-400 file:mr-1 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+          </div>
+        `;
+      });
+    }
+
+    function renderProject() {
+      const container = document.getElementById('projectContainer');
+      container.innerHTML = '';
+      const daftar = fullConfig.project?.daftar || [];
+      daftar.forEach((item, index) => {
+        const path = `project.daftar.${index}.foto`;
+        const timString = Array.isArray(item.tim) ? item.tim.join(', ') : '';
+        container.innerHTML += `
+          <div class="bg-gray-700/50 p-4 rounded-xl border border-gray-600 space-y-3">
+            <div class="flex justify-between items-center">
+              <span class="text-xs font-bold text-yellow-400 uppercase">Project ${index + 1}</span>
+              <button type="button" onclick="removeProjectItem(${index})" class="text-xs text-red-400 hover:underline">Hapus</button>
+            </div>
+            <img id="prev-project-${index}" src="${item.foto}" class="w-full h-28 img-preview bg-gray-800 border border-gray-600">
+            <input type="text" value="${item.judul}" onchange="fullConfig.project.daftar[${index}].judul = this.value" placeholder="Judul Project" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <textarea rows="2" onchange="fullConfig.project.daftar[${index}].deskripsi = this.value" placeholder="Deskripsi Project" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">${item.deskripsi}</textarea>
+            <input type="text" value="${timString}" onchange="fullConfig.project.daftar[${index}].tim = this.value.split(',').map(s => s.trim())" placeholder="Tim (pisahkan dengan koma)" class="w-full p-2 text-xs bg-gray-800 border border-gray-600 rounded">
+            <input type="file" accept="image/*" onchange="handleFileSelect(this, 'prev-project-${index}', '${path}')" class="block w-full text-xs text-gray-400 file:mr-2 file:py-1 file:px-2 file:rounded file:border-0 file:bg-yellow-400 file:text-gray-900 file:font-bold">
+          </div>
+        `;
+      });
+    }
+
+    function addProjectItem() {
+      if (!fullConfig.project.daftar) fullConfig.project.daftar = [];
+      fullConfig.project.daftar.push({ judul: "Judul Project Baru", deskripsi: "Deskripsi project", foto: "img/project-1.jpg", tim: ["Anggota 1"] });
+      renderProject();
+    }
+
+    function removeProjectItem(index) {
+      fullConfig.project.daftar.splice(index, 1);
+      renderProject();
+    }
+
+    function renderSosmed() {
+      const container = document.getElementById('sosmedContainer');
+      container.innerHTML = '';
+      const sosmed = fullConfig.footer?.sosmed || [];
+      sosmed.forEach((item, index) => {
+        container.innerHTML += `
+          <div class="flex items-center gap-2">
+            <input type="text" value="${item.nama}" placeholder="Nama Platform" onchange="fullConfig.footer.sosmed[${index}].nama = this.value" class="w-1/3 p-2 text-xs bg-gray-700 border border-gray-600 rounded">
+            <input type="text" value="${item.url}" placeholder="URL Tautan" onchange="fullConfig.footer.sosmed[${index}].url = this.value" class="flex-1 p-2 text-xs bg-gray-700 border border-gray-600 rounded">
+            <button type="button" onclick="removeSosmedItem(${index})" class="px-2.5 py-2 bg-red-600/30 text-red-400 hover:bg-red-600 hover:text-white rounded text-xs">Hapus</button>
+          </div>
+        `;
+      });
+    }
+
+    function addSosmedItem() {
+      if (!fullConfig.footer.sosmed) fullConfig.footer.sosmed = [];
+      fullConfig.footer.sosmed.push({ nama: "Platform", url: "https://" });
+      renderSosmed();
+    }
+
+    function removeSosmedItem(index) {
+      fullConfig.footer.sosmed.splice(index, 1);
+      renderSosmed();
+    }
+
+    async function uploadMedia(file, fileName) {
+      const { data, error } = await db.storage.from('media').upload(fileName, file, { upsert: true });
+      if (error) throw error;
+      const { data: pubUrl } = db.storage.from('media').getPublicUrl(fileName);
+      return pubUrl.publicUrl;
+    }
+
+    async function saveData(e) {
+      e.preventDefault();
+      const btn = document.getElementById('saveBtn');
+      btn.innerText = 'Memproses & Mengunggah...';
+      btn.disabled = true;
+
+      try {
+        const queueKeys = Object.keys(uploadQueue);
+        for (const path of queueKeys) {
+          const file = uploadQueue[path];
+          const cleanFileName = `${path.replace(/\./g, '-')}-${Date.now()}.${file.name.split('.').pop()}`;
+          const publicUrl = await uploadMedia(file, cleanFileName);
+          setValueByPath(path, publicUrl);
+        }
+
+        const { error } = await db.from('site_config').update({ content: fullConfig }).eq('id', 1);
+        if (error) throw error;
+
+        alert('Berhasil menyimpan seluruh perubahan data dan foto!');
+        location.reload();
+      } catch (err) {
+        alert('Gagal menyimpan: ' + err.message);
+      } finally {
+        btn.innerText = 'Simpan Semua Perubahan';
+        btn.disabled = false;
+      }
+    }
+  </script>
+</body>
+</html>
