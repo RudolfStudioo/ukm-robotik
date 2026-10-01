@@ -306,8 +306,8 @@
         scrollTrigger: { trigger: el, start: 'center 40%', end: 'bottom 10%', scrub: true }
       });
     });
-    /* Kartu pengurus, prestasi & project (foto + teks): naik cepat seperti ketarik ke atas sambil memudar, sama di HP dan desktop */
-    $$('#pengurus .pengurus-item, #prestasi .prestasi-item, #projectList > article').forEach(item => {
+    /* Kartu pengurus, prestasi, jadwal & project: naik cepat seperti ketarik ke atas sambil memudar, sama di HP dan desktop */
+    $$('#pengurus .pengurus-item, #prestasi .prestasi-item, #jadwal .jadwal-item, #projectList > article').forEach(item => {
       gsap.fromTo(item, { y: 0, opacity: 1 }, {
         y: () => -Math.min(260, window.innerHeight * 0.3),
         opacity: 0, ease: 'power1.in', immediateRender: false,

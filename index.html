@@ -1,548 +1,1387 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="id">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1">
-<title>Robotics Mulia</title>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Robotics Mulia</title>
 
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link
+      href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap"
+      rel="stylesheet"
+    />
 
-<script src="https://cdn.tailwindcss.com"></script>
-<script>
-  tailwind.config = {
-    theme: {
-      extend: {
-        colors: { sun: '#ffc918', flame: '#e3242b', ink: '#1b1d22', night: '#0a0a0f', paper: '#f8f8f4', violet: '#5b46d6' },
-        fontFamily: { sans: ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'] }
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            colors: {
+              sun: "#ffc918",
+              flame: "#e3242b",
+              ink: "#1b1d22",
+              night: "#0a0a0f",
+              paper: "#f8f8f4",
+              violet: "#5b46d6",
+            },
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', "system-ui", "sans-serif"],
+            },
+          },
+        },
+      };
+    </script>
+
+    <style type="text/tailwindcss">
+      @layer components {
+        .wrap {
+          @apply mx-auto w-full max-w-6xl px-5;
+        }
+        .sec {
+          @apply relative overflow-hidden py-24 md:py-32;
+        }
+        .sec-h {
+          @apply text-3xl font-extrabold leading-tight tracking-tight md:text-5xl;
+        }
+        .btn {
+          @apply inline-flex items-center justify-center rounded-full bg-sun px-6 py-3 text-sm font-bold text-ink transition duration-300 hover:-translate-y-0.5 hover:shadow-lg;
+        }
+        .btn-ghost {
+          @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-bold text-white ring-1 ring-white/40 transition duration-300 hover:bg-white/10;
+        }
+        .deco {
+          @apply pointer-events-none absolute rounded-full;
+        }
       }
-    }
-  };
-</script>
+    </style>
 
-<style type="text/tailwindcss">
-  @layer components {
-    .wrap      { @apply mx-auto w-full max-w-6xl px-5; }
-    .sec       { @apply relative overflow-hidden py-24 md:py-32; }
-    .sec-h     { @apply text-3xl font-extrabold leading-tight tracking-tight md:text-5xl; }
-    .btn       { @apply inline-flex items-center justify-center rounded-full bg-sun px-6 py-3 text-sm font-bold text-ink transition duration-300 hover:-translate-y-0.5 hover:shadow-lg; }
-    .btn-ghost { @apply inline-flex items-center justify-center rounded-full px-6 py-3 text-sm font-bold text-white ring-1 ring-white/40 transition duration-300 hover:bg-white/10; }
-    .deco      { @apply pointer-events-none absolute rounded-full; }
-  }
-</style>
-
-<style>
-  :root { --sun:#ffc918; --flame:#e3242b; --ink:#1b1d22; --night:#0a0a0f; --paper:#f8f8f4; --violet:#5b46d6; }
-  [hidden] { display: none !important; }
-  /* PENTING: jangan pakai scroll-behavior:smooth di sini, bentrok dengan ScrollTrigger (pin + scrub).
+    <style>
+      :root {
+        --sun: #ffc918;
+        --flame: #e3242b;
+        --ink: #1b1d22;
+        --night: #0a0a0f;
+        --paper: #f8f8f4;
+        --violet: #5b46d6;
+      }
+      [hidden] {
+        display: none !important;
+      }
+      /* PENTING: jangan pakai scroll-behavior:smooth di sini, bentrok dengan ScrollTrigger (pin + scrub).
      Smooth scroll untuk klik menu ditangani script.js (fungsi anchors). */
-  html { scroll-padding-top: 4rem; }
-  body { font-family: 'Plus Jakarta Sans', system-ui, sans-serif; background: var(--paper); color: var(--ink); overflow-x: hidden; }
-  a:focus-visible, button:focus-visible { outline: 2px solid var(--violet); outline-offset: 3px; }
+      html {
+        scroll-padding-top: 4rem;
+      }
+      body {
+        font-family: "Plus Jakarta Sans", system-ui, sans-serif;
+        background: var(--paper);
+        color: var(--ink);
+        overflow-x: hidden;
+      }
+      a:focus-visible,
+      button:focus-visible {
+        outline: 2px solid var(--violet);
+        outline-offset: 3px;
+      }
 
-  /* Slot foto */
-  .slot { position: relative; overflow: hidden; border: 2px dashed rgba(27,29,34,.35); border-radius: 1.25rem; background: rgba(27,29,34,.03); }
-  .slot-dark  { border-color: rgba(255,255,255,.4); background: rgba(255,255,255,.04); }
-  .slot-round { border-radius: 9999px; }
-  .slot > img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity .5s ease; }
-  .slot > img[data-par] { height: 120%; inset: -10% 0 auto 0; }
-  .slot.has-img { border-color: transparent; background: none; }
-  .slot.has-img > img { opacity: 1; }
+      /* Slot foto */
+      .slot {
+        position: relative;
+        overflow: hidden;
+        border: 2px dashed rgba(27, 29, 34, 0.35);
+        border-radius: 1.25rem;
+        background: rgba(27, 29, 34, 0.03);
+      }
+      .slot-dark {
+        border-color: rgba(255, 255, 255, 0.4);
+        background: rgba(255, 255, 255, 0.04);
+      }
+      .slot-round {
+        border-radius: 9999px;
+      }
+      .slot > img {
+        position: absolute;
+        inset: 0;
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        opacity: 0;
+        transition: opacity 0.5s ease;
+      }
+      .slot > img[data-par] {
+        height: 120%;
+        inset: -10% 0 auto 0;
+      }
+      .slot.has-img {
+        border-color: transparent;
+        background: none;
+      }
+      .slot.has-img > img {
+        opacity: 1;
+      }
 
-  /* Memudar dari kiri ke kanan saat scroll: tepi lembut (mask) + makin transparan. --p (0..1) digerakkan script.js.
+      /* Memudar dari kiri ke kanan saat scroll: tepi lembut (mask) + makin transparan. --p (0..1) digerakkan script.js.
      Class .wipe dipasang ke FOTO, atau ke SELURUH CARD kalau card punya atribut data-wipe-card. */
-  .wipe {
-    --p: 0;
-    opacity: calc(1 - var(--p) * .45);
-    -webkit-mask-image: linear-gradient(90deg, transparent calc(var(--p) * 140% - 40%), #000 calc(var(--p) * 140%));
-            mask-image: linear-gradient(90deg, transparent calc(var(--p) * 140% - 40%), #000 calc(var(--p) * 140%));
-  }
+      .wipe {
+        --p: 0;
+        opacity: calc(1 - var(--p) * 0.45);
+        -webkit-mask-image: linear-gradient(
+          90deg,
+          transparent calc(var(--p) * 140% - 40%),
+          #000 calc(var(--p) * 140%)
+        );
+        mask-image: linear-gradient(
+          90deg,
+          transparent calc(var(--p) * 140% - 40%),
+          #000 calc(var(--p) * 140%)
+        );
+      }
 
-  /* Loader (failsafe CSS: hilang sendiri di 9 dtk) */
-  #loader { position: fixed; inset: 0; z-index: 100; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 1.25rem; background: var(--night); color: #fff; animation: loaderOut .6s ease 9s forwards; }
-  #loaderBar { height: 100%; width: 0; border-radius: inherit; background: linear-gradient(90deg, var(--flame), var(--sun)); transition: width .25s ease; }
-  @keyframes loaderOut { to { opacity: 0; visibility: hidden; pointer-events: none; } }
+      /* Loader (failsafe CSS: hilang sendiri di 9 dtk) */
+      #loader {
+        position: fixed;
+        inset: 0;
+        z-index: 100;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 1.25rem;
+        background: var(--night);
+        color: #fff;
+        animation: loaderOut 0.6s ease 9s forwards;
+      }
+      #loaderBar {
+        height: 100%;
+        width: 0;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--flame), var(--sun));
+        transition: width 0.25s ease;
+      }
+      @keyframes loaderOut {
+        to {
+          opacity: 0;
+          visibility: hidden;
+          pointer-events: none;
+        }
+      }
 
-  /* Navbar */
-  #navMenu { display: none; position: absolute; top: 4rem; left: 0; right: 0; flex-direction: column; gap: 1rem; padding: 1.25rem; background: var(--night); }
-  #navMenu.is-open { display: flex; }
-  #navMenu a { transition: color .2s; }
-  #navMenu a:hover { color: var(--sun); }
-  @media (min-width: 768px) {
-    #navMenu { display: flex; position: static; flex-direction: row; gap: 1.75rem; padding: 0; background: none; }
-  }
+      /* Navbar */
+      #navMenu {
+        display: none;
+        position: absolute;
+        top: 4rem;
+        left: 0;
+        right: 0;
+        flex-direction: column;
+        gap: 1rem;
+        padding: 1.25rem;
+        background: var(--night);
+      }
+      #navMenu.is-open {
+        display: flex;
+      }
+      #navMenu a {
+        transition: color 0.2s;
+      }
+      #navMenu a:hover {
+        color: var(--sun);
+      }
+      @media (min-width: 768px) {
+        #navMenu {
+          display: flex;
+          position: static;
+          flex-direction: row;
+          gap: 1.75rem;
+          padding: 0;
+          background: none;
+        }
+      }
 
-  /* Hero */
-  .hero-slide { position: absolute; inset: 0; opacity: 0; transition: opacity 1.2s ease; }
-  .hero-slide.is-active { opacity: 1; }
-  .hero-slide img { width: 100%; height: 100%; object-fit: cover; transform: scale(1); transition: transform 6.5s linear; }
-  .hero-slide.is-active img { transform: scale(1.08); }
-  .hero-dot { width: .6rem; height: .6rem; border-radius: 9999px; background: rgba(255,255,255,.35); transition: width .3s, background .3s; }
-  .hero-dot.is-active { width: 1.75rem; background: var(--sun); }
-  .scroll-line { display: block; width: 1px; height: 2.75rem; background: linear-gradient(var(--sun), transparent); transform-origin: top; animation: scrollLine 2s ease-in-out infinite; }
-  @keyframes scrollLine { 0% { transform: scaleY(0); } 60% { transform: scaleY(1); } 100% { transform: scaleY(1); opacity: 0; } }
+      /* Hero */
+      .hero-slide {
+        position: absolute;
+        inset: 0;
+        opacity: 0;
+        transition: opacity 1.2s ease;
+      }
+      .hero-slide.is-active {
+        opacity: 1;
+      }
+      .hero-slide img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transform: scale(1);
+        transition: transform 6.5s linear;
+      }
+      .hero-slide.is-active img {
+        transform: scale(1.08);
+      }
+      .hero-dot {
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 9999px;
+        background: rgba(255, 255, 255, 0.35);
+        transition:
+          width 0.3s,
+          background 0.3s;
+      }
+      .hero-dot.is-active {
+        width: 1.75rem;
+        background: var(--sun);
+      }
+      .scroll-line {
+        display: block;
+        width: 1px;
+        height: 2.75rem;
+        background: linear-gradient(var(--sun), transparent);
+        transform-origin: top;
+        animation: scrollLine 2s ease-in-out infinite;
+      }
+      @keyframes scrollLine {
+        0% {
+          transform: scaleY(0);
+        }
+        60% {
+          transform: scaleY(1);
+        }
+        100% {
+          transform: scaleY(1);
+          opacity: 0;
+        }
+      }
 
-  /* Tiles horizontal */
-  .tiles-pin { position: relative; height: 100vh; overflow: hidden; display: flex; align-items: center; background: var(--paper); }
-  .tiles-hint { position: absolute; left: 0; right: 0; bottom: 2rem; z-index: 5; display: flex; flex-direction: column; align-items: center; gap: .6rem; padding: 0 1.25rem; text-align: center; font-size: .8125rem; font-weight: 600; color: rgba(27,29,34,.65); pointer-events: none; }
-  .tiles-hint:has(> span[hidden]) { display: none; }
-  .tiles-hint-arrow { width: .6rem; height: .6rem; border-right: 2px solid var(--violet); border-bottom: 2px solid var(--violet); transform: rotate(45deg); animation: hintDown 1.6s ease-in-out infinite; }
-  .tiles-hint-line { position: relative; width: 7rem; height: 3px; border-radius: 9999px; background: rgba(27,29,34,.12); overflow: hidden; }
-  .tiles-hint-line i { position: absolute; inset: 0; border-radius: inherit; background: linear-gradient(90deg, var(--flame), var(--sun)); transform: scaleX(0); transform-origin: left; }
-  @keyframes hintDown { 0%, 100% { transform: translateY(0) rotate(45deg); opacity: .4; } 50% { transform: translateY(6px) rotate(45deg); opacity: 1; } }
-  @media (min-width: 768px) { .tiles-hint { display: none; } }
-  .tiles-track { display: flex; align-items: center; gap: 2rem; padding: 0 8vw; will-change: transform; }
-  .tiles-intro { flex: none; width: min(80vw, 440px); }
-  .tile { flex: none; width: min(78vw, 540px); background: #fff; border-radius: 1.75rem; padding: 1rem; box-shadow: 0 1px 0 rgba(27,29,34,.06); }
+      /* Tiles horizontal */
+      .tiles-pin {
+        position: relative;
+        height: 100vh;
+        overflow: hidden;
+        display: flex;
+        align-items: center;
+        background: var(--paper);
+      }
+      .tiles-hint {
+        position: absolute;
+        left: 0;
+        right: 0;
+        bottom: 2rem;
+        z-index: 5;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 0.6rem;
+        padding: 0 1.25rem;
+        text-align: center;
+        font-size: 0.8125rem;
+        font-weight: 600;
+        color: rgba(27, 29, 34, 0.65);
+        pointer-events: none;
+      }
+      .tiles-hint:has(> span[hidden]) {
+        display: none;
+      }
+      .tiles-hint-arrow {
+        width: 0.6rem;
+        height: 0.6rem;
+        border-right: 2px solid var(--violet);
+        border-bottom: 2px solid var(--violet);
+        transform: rotate(45deg);
+        animation: hintDown 1.6s ease-in-out infinite;
+      }
+      .tiles-hint-line {
+        position: relative;
+        width: 7rem;
+        height: 3px;
+        border-radius: 9999px;
+        background: rgba(27, 29, 34, 0.12);
+        overflow: hidden;
+      }
+      .tiles-hint-line i {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        background: linear-gradient(90deg, var(--flame), var(--sun));
+        transform: scaleX(0);
+        transform-origin: left;
+      }
+      @keyframes hintDown {
+        0%,
+        100% {
+          transform: translateY(0) rotate(45deg);
+          opacity: 0.4;
+        }
+        50% {
+          transform: translateY(6px) rotate(45deg);
+          opacity: 1;
+        }
+      }
+      @media (min-width: 768px) {
+        .tiles-hint {
+          display: none;
+        }
+      }
+      .tiles-track {
+        display: flex;
+        align-items: center;
+        gap: 2rem;
+        padding: 0 8vw;
+        will-change: transform;
+      }
+      .tiles-intro {
+        flex: none;
+        width: min(80vw, 440px);
+      }
+      .tile {
+        flex: none;
+        width: min(78vw, 540px);
+        background: #fff;
+        border-radius: 1.75rem;
+        padding: 1rem;
+        box-shadow: 0 1px 0 rgba(27, 29, 34, 0.06);
+      }
 
-  /* Logo interaktif */
-  .logo-stage { position: relative; width: min(100%, 500px); aspect-ratio: 1; margin: 0 auto; perspective: 900px; }
-  .orbit { position: absolute; inset: 6%; border: 1px solid rgba(27,29,34,.18); border-radius: 50%; animation: spin 30s linear infinite; }
-  .orbit i { position: absolute; top: -.4rem; left: 50%; width: .8rem; height: .8rem; margin-left: -.4rem; border-radius: 50%; background: var(--violet); }
-  @keyframes spin { to { transform: rotate(360deg); } }
-  .logo-box { position: absolute; left: 24%; top: 24%; width: 52%; aspect-ratio: 1; border-radius: 22%; background: var(--night); box-shadow: 0 0 0 4px var(--sun), 0 24px 50px -18px rgba(27,29,34,.5); cursor: pointer; transform: rotate(-6deg); transform-style: preserve-3d; }
-  .logo-box .slot { position: absolute; inset: 0; border-radius: inherit; border-color: rgba(255,255,255,.4); background: none; }
-  .logo-box .slot.has-img { border-color: transparent; }
-  .logo-face > img { object-fit: contain; }
-  .logo-face { transition: transform .7s cubic-bezier(.6,-.2,.3,1.15), opacity .45s ease; }
-  .logo-photo { opacity: 0; transition: opacity .5s ease .1s; }
-  .logo-box:hover .logo-face { transform: rotate(200deg) scale(0); opacity: 0; }
-  .logo-box:hover .logo-photo { opacity: 1; }
+      /* Logo interaktif */
+      .logo-stage {
+        position: relative;
+        width: min(100%, 500px);
+        aspect-ratio: 1;
+        margin: 0 auto;
+        perspective: 900px;
+      }
+      .orbit {
+        position: absolute;
+        inset: 6%;
+        border: 1px solid rgba(27, 29, 34, 0.18);
+        border-radius: 50%;
+        animation: spin 30s linear infinite;
+      }
+      .orbit i {
+        position: absolute;
+        top: -0.4rem;
+        left: 50%;
+        width: 0.8rem;
+        height: 0.8rem;
+        margin-left: -0.4rem;
+        border-radius: 50%;
+        background: var(--violet);
+      }
+      @keyframes spin {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+      .logo-box {
+        position: absolute;
+        left: 24%;
+        top: 24%;
+        width: 52%;
+        aspect-ratio: 1;
+        border-radius: 22%;
+        background: var(--night);
+        box-shadow:
+          0 0 0 4px var(--sun),
+          0 24px 50px -18px rgba(27, 29, 34, 0.5);
+        cursor: pointer;
+        transform: rotate(-6deg);
+        transform-style: preserve-3d;
+      }
+      .logo-box .slot {
+        position: absolute;
+        inset: 0;
+        border-radius: inherit;
+        border-color: rgba(255, 255, 255, 0.4);
+        background: none;
+      }
+      .logo-box .slot.has-img {
+        border-color: transparent;
+      }
+      .logo-face > img {
+        object-fit: contain;
+      }
+      .logo-face {
+        transition:
+          transform 0.7s cubic-bezier(0.6, -0.2, 0.3, 1.15),
+          opacity 0.45s ease;
+      }
+      .logo-photo {
+        opacity: 0;
+        transition: opacity 0.5s ease 0.1s;
+      }
+      .logo-box:hover .logo-face {
+        transform: rotate(200deg) scale(0);
+        opacity: 0;
+      }
+      .logo-box:hover .logo-photo {
+        opacity: 1;
+      }
 
-  /* Card melayang */
-  .float-card { position: absolute; width: min(46%, 190px); }
-  .fc-float { animation: floaty 6s ease-in-out infinite; }
-  .float-card:nth-of-type(3) .fc-float { animation-delay: -2s; animation-duration: 7s; }
-  .float-card:nth-of-type(4) .fc-float { animation-delay: -4s; animation-duration: 8s; }
-  @keyframes floaty { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-10px); } }
-  .fc-in { display: flex; gap: .65rem; align-items: flex-start; padding: .7rem; background: #fff; border-radius: 1rem; box-shadow: 0 14px 30px -14px rgba(27,29,34,.35); transition: transform .35s cubic-bezier(.3,1.5,.5,1); }
-  .fc-in:hover { transform: scale(1.08) rotate(-3deg); }
-  .fc-ic { flex: none; display: grid; place-items: center; width: 2.25rem; height: 2.25rem; border-radius: .7rem; background: var(--violet); color: #fff; transition: transform .6s ease, background .3s, color .3s; }
-  .fc-in:hover .fc-ic { transform: rotate(360deg); background: var(--sun); color: var(--ink); }
+      /* Card melayang */
+      .float-card {
+        position: absolute;
+        width: min(46%, 190px);
+      }
+      .fc-float {
+        animation: floaty 6s ease-in-out infinite;
+      }
+      .float-card:nth-of-type(3) .fc-float {
+        animation-delay: -2s;
+        animation-duration: 7s;
+      }
+      .float-card:nth-of-type(4) .fc-float {
+        animation-delay: -4s;
+        animation-duration: 8s;
+      }
+      @keyframes floaty {
+        0%,
+        100% {
+          transform: translateY(0);
+        }
+        50% {
+          transform: translateY(-10px);
+        }
+      }
+      .fc-in {
+        display: flex;
+        gap: 0.65rem;
+        align-items: flex-start;
+        padding: 0.7rem;
+        background: #fff;
+        border-radius: 1rem;
+        box-shadow: 0 14px 30px -14px rgba(27, 29, 34, 0.35);
+        transition: transform 0.35s cubic-bezier(0.3, 1.5, 0.5, 1);
+      }
+      .fc-in:hover {
+        transform: scale(1.08) rotate(-3deg);
+      }
+      .fc-ic {
+        flex: none;
+        display: grid;
+        place-items: center;
+        width: 2.25rem;
+        height: 2.25rem;
+        border-radius: 0.7rem;
+        background: var(--violet);
+        color: #fff;
+        transition:
+          transform 0.6s ease,
+          background 0.3s,
+          color 0.3s;
+      }
+      .fc-in:hover .fc-ic {
+        transform: rotate(360deg);
+        background: var(--sun);
+        color: var(--ink);
+      }
 
-  /* Layout kecil */
-  #projectList > article > .project-photo { order: 0; }
-  @media (min-width: 768px) {
-    #projectList > article:nth-child(even) > .project-photo { order: 2; }
-  }
-  .misi-list li { position: relative; padding-left: 1.5rem; }
-  .misi-list li::before { content: ""; position: absolute; left: 0; top: .55em; width: .6rem; height: .6rem; border-radius: 3px; background: var(--sun); box-shadow: 0 0 0 1px rgba(27,29,34,.25); transform: rotate(45deg); }
+      /* Layout kecil */
+      #projectList > article > .project-photo {
+        order: 0;
+      }
+      @media (min-width: 768px) {
+        #projectList > article:nth-child(even) > .project-photo {
+          order: 2;
+        }
+      }
+      .misi-list li {
+        position: relative;
+        padding-left: 1.5rem;
+      }
+      .misi-list li::before {
+        content: "";
+        position: absolute;
+        left: 0;
+        top: 0.55em;
+        width: 0.6rem;
+        height: 0.6rem;
+        border-radius: 3px;
+        background: var(--sun);
+        box-shadow: 0 0 0 1px rgba(27, 29, 34, 0.25);
+        transform: rotate(45deg);
+      }
 
-  /* Kartu pengurus interaktif (pakai translate/rotate/scale terpisah agar tidak bentrok dengan GSAP) */
-  .pengurus-card { cursor: pointer; -webkit-tap-highlight-color: transparent; transition: translate .35s cubic-bezier(.3,1.5,.5,1), rotate .35s ease, box-shadow .35s ease; }
-  .pengurus-card .slot > img { transition: opacity .5s ease, scale .6s ease; }
-  .pengurus-card h3 { width: fit-content; background: linear-gradient(var(--sun), var(--sun)) left bottom / 0 3px no-repeat; padding-bottom: 2px; transition: background-size .4s ease; }
-  .pengurus-card p { transition: color .3s; }
+      /* Kartu pengurus interaktif (pakai translate/rotate/scale terpisah agar tidak bentrok dengan GSAP) */
+      .pengurus-card {
+        cursor: pointer;
+        -webkit-tap-highlight-color: transparent;
+        transition:
+          translate 0.35s cubic-bezier(0.3, 1.5, 0.5, 1),
+          rotate 0.35s ease,
+          box-shadow 0.35s ease;
+      }
+      .pengurus-card .slot > img {
+        transition:
+          opacity 0.5s ease,
+          scale 0.6s ease;
+      }
+      .pengurus-card h3 {
+        width: fit-content;
+        background: linear-gradient(var(--sun), var(--sun)) left bottom / 0 3px
+          no-repeat;
+        padding-bottom: 2px;
+        transition: background-size 0.4s ease;
+      }
+      .pengurus-card p {
+        transition: color 0.3s;
+      }
 
-  .pengurus-card.is-active { translate: 0 -10px; rotate: -1deg; box-shadow: 0 22px 40px -18px rgba(27,29,34,.4); }
-  .pengurus-card.is-active .slot > img { scale: 1.1; }
-  .pengurus-card.is-active h3 { background-size: 100% 3px; }
-  .pengurus-card.is-active p { color: var(--violet); }
+      .pengurus-card.is-active {
+        translate: 0 -10px;
+        rotate: -1deg;
+        box-shadow: 0 22px 40px -18px rgba(27, 29, 34, 0.4);
+      }
+      .pengurus-card.is-active .slot > img {
+        scale: 1.1;
+      }
+      .pengurus-card.is-active h3 {
+        background-size: 100% 3px;
+      }
+      .pengurus-card.is-active p {
+        color: var(--violet);
+      }
 
-  @media (hover: hover) {
-    .pengurus-card:hover { translate: 0 -10px; rotate: -1deg; box-shadow: 0 22px 40px -18px rgba(27,29,34,.4); }
-    .pengurus-card:hover .slot > img { scale: 1.1; }
-    .pengurus-card:hover h3 { background-size: 100% 3px; }
-    .pengurus-card:hover p { color: var(--violet); }
-  }
+      @media (hover: hover) {
+        .pengurus-card:hover {
+          translate: 0 -10px;
+          rotate: -1deg;
+          box-shadow: 0 22px 40px -18px rgba(27, 29, 34, 0.4);
+        }
+        .pengurus-card:hover .slot > img {
+          scale: 1.1;
+        }
+        .pengurus-card:hover h3 {
+          background-size: 100% 3px;
+        }
+        .pengurus-card:hover p {
+          color: var(--violet);
+        }
+      }
 
-  /* Reduced motion */
-  @media (prefers-reduced-motion: reduce) {
-    *, *::before, *::after { animation: none !important; transition-duration: .01ms !important; }
-    #loader { animation: loaderOut .01ms linear 9s forwards !important; }
-  }
-</style>
-<noscript><style>#loader { display: none; }</style></noscript>
-</head>
+      /* Reduced motion */
+      @media (prefers-reduced-motion: reduce) {
+        *,
+        *::before,
+        *::after {
+          animation: none !important;
+          transition-duration: 0.01ms !important;
+        }
+        #loader {
+          animation: loaderOut 0.01ms linear 9s forwards !important;
+        }
+      }
+    </style>
+    <noscript
+      ><style>
+        #loader {
+          display: none;
+        }
+      </style></noscript
+    >
+  </head>
 
-<body class="antialiased">
+  <body class="antialiased">
+    <!-- Ikon SVG (dipakai lewat <use href="#i-NAMA">) -->
+    <svg width="0" height="0" style="position: absolute" aria-hidden="true">
+      <defs>
+        <symbol id="i-bolt" viewBox="0 0 24 24">
+          <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+        </symbol>
+        <symbol id="i-code" viewBox="0 0 24 24">
+          <polyline points="16 18 22 12 16 6" />
+          <polyline points="8 6 2 12 8 18" />
+        </symbol>
+        <symbol id="i-users" viewBox="0 0 24 24">
+          <path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2" />
+          <circle cx="9" cy="7" r="4" />
+          <path d="M23 21v-2a4 4 0 0 0-3-3.87" />
+          <path d="M16 3.13a4 4 0 0 1 0 7.75" />
+        </symbol>
+        <symbol id="i-cpu" viewBox="0 0 24 24">
+          <rect x="4" y="4" width="16" height="16" rx="2" />
+          <rect x="9" y="9" width="6" height="6" />
+          <path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3" />
+        </symbol>
+        <symbol id="i-award" viewBox="0 0 24 24">
+          <circle cx="12" cy="8" r="7" />
+          <polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88" />
+        </symbol>
+      </defs>
+    </svg>
 
-<!-- Ikon SVG (dipakai lewat <use href="#i-NAMA">) -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true">
-  <defs>
-    <symbol id="i-bolt"  viewBox="0 0 24 24"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></symbol>
-    <symbol id="i-code"  viewBox="0 0 24 24"><polyline points="16 18 22 12 16 6"/><polyline points="8 6 2 12 8 18"/></symbol>
-    <symbol id="i-users" viewBox="0 0 24 24"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></symbol>
-    <symbol id="i-cpu"   viewBox="0 0 24 24"><rect x="4" y="4" width="16" height="16" rx="2"/><rect x="9" y="9" width="6" height="6"/><path d="M9 1v3M15 1v3M9 20v3M15 20v3M20 9h3M20 14h3M1 9h3M1 14h3"/></symbol>
-    <symbol id="i-award" viewBox="0 0 24 24"><circle cx="12" cy="8" r="7"/><polyline points="8.21 13.89 7 23 12 20 17 23 15.79 13.88"/></symbol>
-  </defs>
-</svg>
-
-
-<!-- ============ LOADING SCREEN ============ -->
-<div id="loader" role="status" aria-live="polite">
-  <div class="slot slot-dark slot-round h-28 w-28">
-    <img src="img/logo.png" data-img="site.logo" alt="" onload="this.parentNode.classList.add('has-img')" onerror="this.style.display='none'">
-  </div>
-  <p class="text-lg font-bold tracking-wide" data-text="site.loading">Loading</p>
-  <div class="h-1.5 w-56 overflow-hidden rounded-full bg-white/15"><div id="loaderBar"></div></div>
-</div>
-
-
-<!-- ============ NAVBAR ============ -->
-<header id="nav" class="fixed inset-x-0 top-0 z-50 bg-night/80 text-white backdrop-blur-md">
-  <div class="wrap relative flex h-16 items-center justify-between">
-    <a href="#hero" class="flex items-center gap-3">
-      <span class="slot slot-dark slot-round h-10 w-10 shrink-0"><img data-img="site.logo" alt=""></span>
-      <span class="font-extrabold" data-text="site.nama"></span>
-    </a>
-
-    <nav id="navMenu" class="text-sm font-medium" data-list="nav" data-tpl="tpl-nav" aria-label="Menu utama"></nav>
-
-    <button id="navToggle" type="button" class="grid h-10 w-10 place-items-center rounded-lg md:hidden" aria-label="Buka menu" aria-expanded="false" aria-controls="navMenu">
-      <svg viewBox="0 0 24 24" class="h-6 w-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
-    </button>
-  </div>
-</header>
-
-<main>
-
-  <!-- ============ HERO ============ -->
-  <section id="hero" class="relative flex min-h-screen items-center overflow-hidden bg-night text-white">
-    <div id="heroBg" class="absolute inset-x-0 -top-[12%] h-[124%]">
-      <div id="heroSlides" class="absolute inset-0" data-list="hero.images" data-tpl="tpl-hero"></div>
-      <div class="absolute inset-0 bg-gradient-to-b from-night/70 via-night/45 to-night/90"></div>
-    </div>
-    <div id="heroEmpty" class="absolute inset-x-5 bottom-5 top-24 rounded-3xl border-2 border-dashed border-white/30"></div>
-
-    <div data-speed="-60" class="wrap relative z-10 pb-16 pt-28">
-      <h1 class="max-w-4xl text-5xl font-extrabold leading-[1.05] tracking-tight md:text-7xl" data-anim="up" data-text="hero.judul"></h1>
-      <p class="mt-6 max-w-xl text-base text-white/80 md:text-lg" data-anim="up" data-text="hero.sub"></p>
-      <div class="mt-9 flex flex-wrap gap-3" data-anim="up">
-        <a class="btn" data-href="hero.cta1.url" data-text="hero.cta1.label"></a>
-        <a class="btn-ghost" data-href="hero.cta2.url" data-text="hero.cta2.label"></a>
+    <!-- ============ LOADING SCREEN ============ -->
+    <div id="loader" role="status" aria-live="polite">
+      <div class="slot slot-dark slot-round h-28 w-28">
+        <img
+          src="img/logo.png"
+          data-img="site.logo"
+          alt=""
+          onload="this.parentNode.classList.add('has-img')"
+          onerror="this.style.display = 'none'"
+        />
+      </div>
+      <p class="text-lg font-bold tracking-wide" data-text="site.loading">
+        Loading
+      </p>
+      <div class="h-1.5 w-56 overflow-hidden rounded-full bg-white/15">
+        <div id="loaderBar"></div>
       </div>
     </div>
 
-    <div class="absolute bottom-8 left-5 z-10 flex items-center gap-3 text-sm text-white/70 md:left-10" data-anim="fade">
-      <span class="scroll-line"></span><span data-text="hero.scroll"></span>
-    </div>
-    <div id="heroDots" class="absolute bottom-9 right-5 z-10 flex items-center gap-2 md:right-10"></div>
-  </section>
+    <!-- ============ NAVBAR ============ -->
+    <header
+      id="nav"
+      class="fixed inset-x-0 top-0 z-50 bg-night/80 text-white backdrop-blur-md"
+    >
+      <div class="wrap relative flex h-16 items-center justify-between">
+        <a href="#hero" class="flex items-center gap-3">
+          <span class="slot slot-dark slot-round h-10 w-10 shrink-0"
+            ><img data-img="site.logo" alt=""
+          /></span>
+          <span class="font-extrabold" data-text="site.nama"></span>
+        </a>
 
+        <nav
+          id="navMenu"
+          class="text-sm font-medium"
+          data-list="nav"
+          data-tpl="tpl-nav"
+          aria-label="Menu utama"
+        ></nav>
 
-  <!-- ============ TILES HORIZONTAL (pinned) ============ -->
-  <section id="tiles" class="tiles-pin" aria-label="Sorotan">
-    <div id="tilesTrack" class="tiles-track">
-      <div class="tiles-intro">
-        <h2 class="sec-h" data-anim="up" data-text="tiles.judul"></h2>
-        <p class="mt-4 text-ink/70" data-anim="up" data-text="tiles.sub"></p>
+        <button
+          id="navToggle"
+          type="button"
+          class="grid h-10 w-10 place-items-center rounded-lg md:hidden"
+          aria-label="Buka menu"
+          aria-expanded="false"
+          aria-controls="navMenu"
+        >
+          <svg
+            viewBox="0 0 24 24"
+            class="h-6 w-6"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="2"
+            stroke-linecap="round"
+          >
+            <path d="M4 7h16M4 12h16M4 17h16" />
+          </svg>
+        </button>
       </div>
-      <div class="contents" data-list="tiles.items" data-tpl="tpl-tile"></div>
-      <div class="w-[6vw] flex-none"></div>
-    </div>
+    </header>
 
-    <!-- Petunjuk scroll (hanya HP) -->
-    <div class="tiles-hint" data-anim="fade">
-      <span data-text="tiles.petunjuk"></span>
-      <span class="tiles-hint-arrow" aria-hidden="true"></span>
-      <span class="tiles-hint-line" aria-hidden="true"><i id="tilesBar"></i></span>
-    </div>
-  </section>
+    <main>
+      <!-- ============ HERO ============ -->
+      <section
+        id="hero"
+        class="relative flex min-h-screen items-center overflow-hidden bg-night text-white"
+      >
+        <div id="heroBg" class="absolute inset-x-0 -top-[12%] h-[124%]">
+          <div
+            id="heroSlides"
+            class="absolute inset-0"
+            data-list="hero.images"
+            data-tpl="tpl-hero"
+          ></div>
+          <div
+            class="absolute inset-0 bg-gradient-to-b from-night/70 via-night/45 to-night/90"
+          ></div>
+        </div>
+        <div
+          id="heroEmpty"
+          class="absolute inset-x-5 bottom-5 top-24 rounded-3xl border-2 border-dashed border-white/30"
+        ></div>
 
-
-  <!-- ============ TENTANG ============ -->
-  <section id="tentang" class="sec bg-white">
-    <span class="deco -right-24 top-10 h-72 w-72 border-[3px] border-sun/60" data-speed="-50" aria-hidden="true"></span>
-
-    <div class="wrap relative grid items-center gap-16 md:grid-cols-2">
-      <div data-speed="-15">
-        <h2 class="sec-h" data-anim="up" data-text="about.judul"></h2>
-        <p class="mt-5 max-w-prose leading-relaxed text-ink/75" data-anim="up" data-text="about.teks"></p>
-
-        <h3 class="mt-10 text-xl font-extrabold" data-anim="up" data-text="about.visiJudul"></h3>
-        <p class="mt-2 max-w-prose leading-relaxed text-ink/75" data-anim="up" data-text="about.visi"></p>
-
-        <h3 class="mt-8 text-xl font-extrabold" data-anim="up" data-text="about.misiJudul"></h3>
-        <ul class="misi-list mt-3 max-w-prose space-y-2 text-ink/75" data-list="about.misi" data-tpl="tpl-misi"></ul>
-      </div>
-
-      <!-- Logo interaktif: default logo UKM, hover -> foto -->
-      <div data-speed="30">
-        <div id="logoStage" class="logo-stage" data-anim="zoom">
-          <div class="orbit" aria-hidden="true"><i></i></div>
-
-          <div id="logoBox" class="logo-box" role="img" aria-label="Logo UKM">
-            <div class="logo-photo slot"><img data-img="logoInteraktif.foto" alt=""></div>
-            <div class="logo-face slot"><img data-img="site.logo" alt=""></div>
-          </div>
-
-          <div class="float-card" data-depth="22" style="left:-2%;top:4%">
-            <div class="fc-float"><div class="fc-in">
-              <span class="fc-ic"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="logoInteraktif.cards.0.ikon"><use href="#i-cpu"/></svg></span>
-              <span>
-                <b class="block text-sm leading-tight" data-text="logoInteraktif.cards.0.judul"></b>
-                <span class="mt-0.5 block text-xs leading-snug text-ink/65" data-text="logoInteraktif.cards.0.teks"></span>
-              </span>
-            </div></div>
-          </div>
-
-          <div class="float-card" data-depth="42" style="right:-3%;top:40%">
-            <div class="fc-float"><div class="fc-in">
-              <span class="fc-ic"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="logoInteraktif.cards.1.ikon"><use href="#i-code"/></svg></span>
-              <span>
-                <b class="block text-sm leading-tight" data-text="logoInteraktif.cards.1.judul"></b>
-                <span class="mt-0.5 block text-xs leading-snug text-ink/65" data-text="logoInteraktif.cards.1.teks"></span>
-              </span>
-            </div></div>
-          </div>
-
-          <div class="float-card" data-depth="30" style="left:4%;bottom:0">
-            <div class="fc-float"><div class="fc-in">
-              <span class="fc-ic"><svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" data-icon="logoInteraktif.cards.2.ikon"><use href="#i-users"/></svg></span>
-              <span>
-                <b class="block text-sm leading-tight" data-text="logoInteraktif.cards.2.judul"></b>
-                <span class="mt-0.5 block text-xs leading-snug text-ink/65" data-text="logoInteraktif.cards.2.teks"></span>
-              </span>
-            </div></div>
+        <div data-speed="-60" class="wrap relative z-10 pb-16 pt-28">
+          <h1
+            class="max-w-4xl text-5xl font-extrabold leading-[1.05] tracking-tight md:text-7xl"
+            data-anim="up"
+            data-text="hero.judul"
+          ></h1>
+          <p
+            class="mt-6 max-w-xl text-base text-white/80 md:text-lg"
+            data-anim="up"
+            data-text="hero.sub"
+          ></p>
+          <div class="mt-9 flex flex-wrap gap-3" data-anim="up">
+            <a
+              class="btn"
+              data-href="hero.cta1.url"
+              data-text="hero.cta1.label"
+            ></a>
+            <a
+              class="btn-ghost"
+              data-href="hero.cta2.url"
+              data-text="hero.cta2.label"
+            ></a>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
 
-
-  <!-- ============ DOSEN PENANGGUNG JAWAB ============ -->
-  <section id="dosen" class="dosen sec">
-    <div data-exit="left" class="wrap grid items-center gap-10 md:grid-cols-[minmax(0,360px)_1fr] md:gap-16">
-      <div data-speed="25">
-        <div class="slot aspect-[4/5]" data-anim="left"><img data-img="dosen.foto" data-par alt=""></div>
-      </div>
-      <div data-speed="-12">
-        <h2 class="sec-h" data-anim="up" data-text="dosen.judul"></h2>
-        <h3 class="mt-6 text-2xl font-extrabold" data-anim="up" data-text="dosen.nama"></h3>
-        <p class="mt-1 font-semibold text-violet" data-anim="up" data-text="dosen.jabatan"></p>
-        <p class="mt-4 max-w-prose leading-relaxed text-ink/75" data-anim="up" data-text="dosen.keterangan"></p>
-      </div>
-    </div>
-
-    <!-- Dosen Pembimbing 2 (data: dosen2), foto di kanan -->
-    <div data-exit="right" class="wrap mt-20 grid items-center gap-10 md:mt-28 md:grid-cols-[1fr_minmax(0,360px)] md:gap-16">
-      <div data-speed="25" class="md:order-2">
-        <div class="slot aspect-[4/5]" data-anim="right"><img data-img="dosen2.foto" data-par alt=""></div>
-      </div>
-      <div data-speed="-12">
-        <h2 class="sec-h" data-anim="up" data-text="dosen2.judul"></h2>
-        <h3 class="mt-6 text-2xl font-extrabold" data-anim="up" data-text="dosen2.nama"></h3>
-        <p class="mt-1 font-semibold text-violet" data-anim="up" data-text="dosen2.jabatan"></p>
-        <p class="mt-4 max-w-prose leading-relaxed text-ink/75" data-anim="up" data-text="dosen2.keterangan"></p>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ============ STRUKTUR PENGURUS ============ -->
-  <section id="pengurus" class="pengurus sec bg-white">
-    <div class="wrap">
-      <h2 class="sec-h" data-anim="up" data-text="pengurus.judul"></h2>
-      <div class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4" data-list="pengurus.anggota" data-tpl="tpl-pengurus"></div>
-    </div>
-  </section>
-
-
-  <!-- ============ PRESTASI ============ -->
-  <section id="prestasi" class="sec">
-    <span class="deco -left-20 top-24 h-56 w-56 bg-flame/10" data-speed="60" aria-hidden="true"></span>
-    <div class="wrap relative">
-      <h2 class="sec-h" data-anim="up" data-text="prestasi.judul"></h2>
-      <div class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3" data-list="prestasi.daftar" data-tpl="tpl-prestasi"></div>
-    </div>
-  </section>
-
-
-  <!-- ============ JADWAL LATIHAN (6 baris kosong, script menambah kalau data lebih) ============ -->
-  <section id="jadwal" class="sec bg-white">
-    <div class="wrap">
-      <h2 class="sec-h" data-anim="up" data-text="jadwal.judul"></h2>
-      <div class="mt-10 overflow-x-auto rounded-3xl bg-paper ring-1 ring-ink/10" data-anim="up">
-        <table class="w-full min-w-[360px] border-collapse text-left text-sm">
-          <thead>
-            <tr class="bg-night text-white">
-              <th class="w-1/3 px-5 py-4 font-bold" data-text="jadwal.kolom.pertemuan"></th>
-              <th class="px-5 py-4 font-bold" data-text="jadwal.kolom.materi"></th>
-            </tr>
-          </thead>
-          <tbody id="jadwalBody" data-table="jadwal.baris">
-            <tr class="border-t border-ink/10"><td class="h-14 px-5" data-cell="pertemuan"></td><td class="px-5" data-cell="materi"></td></tr>
-            <tr class="border-t border-ink/10"><td class="h-14 px-5" data-cell="pertemuan"></td><td class="px-5" data-cell="materi"></td></tr>
-            <tr class="border-t border-ink/10"><td class="h-14 px-5" data-cell="pertemuan"></td><td class="px-5" data-cell="materi"></td></tr>
-            <tr class="border-t border-ink/10"><td class="h-14 px-5" data-cell="pertemuan"></td><td class="px-5" data-cell="materi"></td></tr>
-            <tr class="border-t border-ink/10"><td class="h-14 px-5" data-cell="pertemuan"></td><td class="px-5" data-cell="materi"></td></tr>
-            <tr class="border-t border-ink/10"><td class="h-14 px-5" data-cell="pertemuan"></td><td class="px-5" data-cell="materi"></td></tr>
-          </tbody>
-        </table>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ============ GALERI (10 slot, bento) ============ -->
-  <section id="galeri" class="sec">
-    <div class="wrap">
-      <h2 class="sec-h" data-anim="up" data-text="galeri.judul"></h2>
-      <div class="mt-12 grid auto-rows-[140px] grid-flow-dense grid-cols-2 gap-3 md:auto-rows-[170px] md:grid-cols-4 md:gap-4">
-        <figure class="slot col-span-2 row-span-2" data-anim="zoom"><img data-img="galeri.foto.0" data-par alt=""></figure>
-        <figure class="slot" data-anim="zoom"><img data-img="galeri.foto.1" data-par alt=""></figure>
-        <figure class="slot" data-anim="zoom"><img data-img="galeri.foto.2" data-par alt=""></figure>
-        <figure class="slot row-span-2" data-anim="zoom"><img data-img="galeri.foto.3" data-par alt=""></figure>
-        <figure class="slot col-span-2" data-anim="zoom"><img data-img="galeri.foto.4" data-par alt=""></figure>
-        <figure class="slot" data-anim="zoom"><img data-img="galeri.foto.5" data-par alt=""></figure>
-        <figure class="slot" data-anim="zoom"><img data-img="galeri.foto.6" data-par alt=""></figure>
-        <figure class="slot col-span-2" data-anim="zoom"><img data-img="galeri.foto.7" data-par alt=""></figure>
-        <figure class="slot" data-anim="zoom"><img data-img="galeri.foto.8" data-par alt=""></figure>
-        <figure class="slot" data-anim="zoom"><img data-img="galeri.foto.9" data-par alt=""></figure>
-      </div>
-    </div>
-  </section>
-
-
-  <!-- ============ PROJECT ============ -->
-  <section id="project" class="sec bg-white">
-    <span class="deco -right-28 top-1/3 h-80 w-80 border-[3px] border-violet/25" data-speed="-70" aria-hidden="true"></span>
-    <div class="wrap relative">
-      <h2 class="sec-h" data-anim="up" data-text="project.judul"></h2>
-      <div id="projectList" class="mt-14 space-y-20 md:space-y-28" data-list="project.daftar" data-tpl="tpl-project"></div>
-    </div>
-  </section>
-
-</main>
-
-
-<!-- ============ FOOTER (minimalis: kiri brand + sosmed, kanan pendaftaran) ============ -->
-<footer id="kontak" class="relative overflow-hidden bg-night text-white">
-  <div class="h-1 w-full bg-gradient-to-r from-flame via-sun to-violet" aria-hidden="true"></div>
-  <span class="deco -right-24 -top-24 h-80 w-80 border-[3px] border-sun/15" aria-hidden="true"></span>
-  <span class="deco -bottom-32 -left-20 h-72 w-72 bg-violet/15 blur-2xl" aria-hidden="true"></span>
-
-  <div class="wrap relative pb-10 pt-16 md:pt-20">
-    <div class="grid items-start gap-12 md:grid-cols-2 md:gap-0">
-
-      <!-- Kiri -->
-      <div class="md:pr-16" data-anim="up">
-        <div class="flex items-center gap-4">
-          <span class="slot slot-dark slot-round h-14 w-14 shrink-0"><img data-img="site.logo" alt=""></span>
-          <span class="text-xl font-extrabold" data-text="site.nama"></span>
+        <div
+          class="absolute bottom-8 left-5 z-10 flex items-center gap-3 text-sm text-white/70 md:left-10"
+          data-anim="fade"
+        >
+          <span class="scroll-line"></span><span data-text="hero.scroll"></span>
         </div>
-        <h2 class="mt-8 text-3xl font-extrabold leading-tight md:text-4xl" data-text="footer.judul"></h2>
-        <p class="mt-4 max-w-sm leading-relaxed text-white/65" data-text="footer.deskripsi"></p>
-        <ul class="mt-7 flex flex-wrap gap-3" data-list="footer.sosmed" data-tpl="tpl-sosmed"></ul>
-      </div>
+        <div
+          id="heroDots"
+          class="absolute bottom-9 right-5 z-10 flex items-center gap-2 md:right-10"
+        ></div>
+      </section>
 
-      <!-- Kanan: pendaftaran -->
-      <div id="pendaftaran" class="md:border-l md:border-white/10 md:pl-16" data-anim="up">
-        <h3 class="text-2xl font-extrabold md:text-3xl" data-text="pendaftaran.judul"></h3>
-        <p class="mt-3 max-w-sm text-sm leading-relaxed text-white/60" data-text="pendaftaran.teks"></p>
-
-        <div class="mt-7 flex max-w-sm flex-col gap-3">
-          <a id="daftarBtn" class="btn w-full" target="_blank" rel="noopener"></a>
-          <button id="daftarCopy" type="button" class="btn w-full !bg-white"></button>
-        </div>
-
-        <div class="mt-7 max-w-sm">
-          <div class="flex items-end justify-between gap-4">
-            <span id="daftarBadge" class="font-bold"></span>
-            <span id="daftarCount" class="text-2xl font-extrabold tabular-nums"></span>
+      <!-- ============ TILES HORIZONTAL (pinned) ============ -->
+      <section id="tiles" class="tiles-pin" aria-label="Sorotan">
+        <div id="tilesTrack" class="tiles-track">
+          <div class="tiles-intro">
+            <h2 class="sec-h" data-anim="up" data-text="tiles.judul"></h2>
+            <p
+              class="mt-4 text-ink/70"
+              data-anim="up"
+              data-text="tiles.sub"
+            ></p>
           </div>
-          <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
-            <div id="daftarBar" class="h-full rounded-full bg-gradient-to-r from-flame to-sun transition-all duration-700" style="width:0"></div>
+          <div
+            class="contents"
+            data-list="tiles.items"
+            data-tpl="tpl-tile"
+          ></div>
+          <div class="w-[6vw] flex-none"></div>
+        </div>
+
+        <!-- Petunjuk scroll (hanya HP) -->
+        <div class="tiles-hint" data-anim="fade">
+          <span data-text="tiles.petunjuk"></span>
+          <span class="tiles-hint-arrow" aria-hidden="true"></span>
+          <span class="tiles-hint-line" aria-hidden="true"
+            ><i id="tilesBar"></i
+          ></span>
+        </div>
+      </section>
+
+      <!-- ============ TENTANG ============ -->
+      <section id="tentang" class="sec bg-white">
+        <span
+          class="deco -right-24 top-10 h-72 w-72 border-[3px] border-sun/60"
+          data-speed="-50"
+          aria-hidden="true"
+        ></span>
+
+        <div class="wrap relative grid items-center gap-16 md:grid-cols-2">
+          <div data-speed="-15">
+            <h2 class="sec-h" data-anim="up" data-text="about.judul"></h2>
+            <p
+              class="mt-5 max-w-prose leading-relaxed text-ink/75"
+              data-anim="up"
+              data-text="about.teks"
+            ></p>
+
+            <h3
+              class="mt-10 text-xl font-extrabold"
+              data-anim="up"
+              data-text="about.visiJudul"
+            ></h3>
+            <p
+              class="mt-2 max-w-prose leading-relaxed text-ink/75"
+              data-anim="up"
+              data-text="about.visi"
+            ></p>
+
+            <h3
+              class="mt-8 text-xl font-extrabold"
+              data-anim="up"
+              data-text="about.misiJudul"
+            ></h3>
+            <ul
+              class="misi-list mt-3 max-w-prose space-y-2 text-ink/75"
+              data-list="about.misi"
+              data-tpl="tpl-misi"
+            ></ul>
+          </div>
+
+          <!-- Logo interaktif: default logo UKM, hover -> foto -->
+          <div data-speed="30">
+            <div id="logoStage" class="logo-stage" data-anim="zoom">
+              <div class="orbit" aria-hidden="true"><i></i></div>
+
+              <div
+                id="logoBox"
+                class="logo-box"
+                role="img"
+                aria-label="Logo UKM"
+              >
+                <div class="logo-photo slot">
+                  <img data-img="logoInteraktif.foto" alt="" />
+                </div>
+                <div class="logo-face slot">
+                  <img data-img="site.logo" alt="" />
+                </div>
+              </div>
+
+              <div
+                class="float-card"
+                data-depth="22"
+                style="left: -2%; top: 4%"
+              >
+                <div class="fc-float">
+                  <div class="fc-in">
+                    <span class="fc-ic"
+                      ><svg
+                        class="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        data-icon="logoInteraktif.cards.0.ikon"
+                      >
+                        <use href="#i-cpu" /></svg
+                    ></span>
+                    <span>
+                      <b
+                        class="block text-sm leading-tight"
+                        data-text="logoInteraktif.cards.0.judul"
+                      ></b>
+                      <span
+                        class="mt-0.5 block text-xs leading-snug text-ink/65"
+                        data-text="logoInteraktif.cards.0.teks"
+                      ></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="float-card"
+                data-depth="42"
+                style="right: -3%; top: 40%"
+              >
+                <div class="fc-float">
+                  <div class="fc-in">
+                    <span class="fc-ic"
+                      ><svg
+                        class="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        data-icon="logoInteraktif.cards.1.ikon"
+                      >
+                        <use href="#i-code" /></svg
+                    ></span>
+                    <span>
+                      <b
+                        class="block text-sm leading-tight"
+                        data-text="logoInteraktif.cards.1.judul"
+                      ></b>
+                      <span
+                        class="mt-0.5 block text-xs leading-snug text-ink/65"
+                        data-text="logoInteraktif.cards.1.teks"
+                      ></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <div
+                class="float-card"
+                data-depth="30"
+                style="left: 4%; bottom: 0"
+              >
+                <div class="fc-float">
+                  <div class="fc-in">
+                    <span class="fc-ic"
+                      ><svg
+                        class="h-5 w-5"
+                        viewBox="0 0 24 24"
+                        fill="none"
+                        stroke="currentColor"
+                        stroke-width="2"
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        data-icon="logoInteraktif.cards.2.ikon"
+                      >
+                        <use href="#i-users" /></svg
+                    ></span>
+                    <span>
+                      <b
+                        class="block text-sm leading-tight"
+                        data-text="logoInteraktif.cards.2.judul"
+                      ></b>
+                      <span
+                        class="mt-0.5 block text-xs leading-snug text-ink/65"
+                        data-text="logoInteraktif.cards.2.teks"
+                      ></span>
+                    </span>
+                  </div>
+                </div>
+              </div>
+            </div>
           </div>
         </div>
+      </section>
+
+      <!-- ============ DOSEN PENANGGUNG JAWAB ============ -->
+      <section id="dosen" class="dosen sec">
+        <div
+          data-exit="left"
+          class="wrap grid items-center gap-10 md:grid-cols-[minmax(0,360px)_1fr] md:gap-16"
+        >
+          <div data-speed="25">
+            <div class="slot aspect-[4/5]" data-anim="left">
+              <img data-img="dosen.foto" data-par alt="" />
+            </div>
+          </div>
+          <div data-speed="-12">
+            <h2 class="sec-h" data-anim="up" data-text="dosen.judul"></h2>
+            <h3
+              class="mt-6 text-2xl font-extrabold"
+              data-anim="up"
+              data-text="dosen.nama"
+            ></h3>
+            <p
+              class="mt-1 font-semibold text-violet"
+              data-anim="up"
+              data-text="dosen.jabatan"
+            ></p>
+            <p
+              class="mt-4 max-w-prose leading-relaxed text-ink/75"
+              data-anim="up"
+              data-text="dosen.keterangan"
+            ></p>
+          </div>
+        </div>
+
+        <!-- Dosen Pembimbing 2 (data: dosen2), foto di kanan -->
+        <div
+          data-exit="right"
+          class="wrap mt-20 grid items-center gap-10 md:mt-28 md:grid-cols-[1fr_minmax(0,360px)] md:gap-16"
+        >
+          <div data-speed="25" class="md:order-2">
+            <div class="slot aspect-[4/5]" data-anim="right">
+              <img data-img="dosen2.foto" data-par alt="" />
+            </div>
+          </div>
+          <div data-speed="-12">
+            <h2 class="sec-h" data-anim="up" data-text="dosen2.judul"></h2>
+            <h3
+              class="mt-6 text-2xl font-extrabold"
+              data-anim="up"
+              data-text="dosen2.nama"
+            ></h3>
+            <p
+              class="mt-1 font-semibold text-violet"
+              data-anim="up"
+              data-text="dosen2.jabatan"
+            ></p>
+            <p
+              class="mt-4 max-w-prose leading-relaxed text-ink/75"
+              data-anim="up"
+              data-text="dosen2.keterangan"
+            ></p>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ STRUKTUR PENGURUS ============ -->
+      <section id="pengurus" class="pengurus sec bg-white">
+        <div class="wrap">
+          <h2 class="sec-h" data-anim="up" data-text="pengurus.judul"></h2>
+          <div
+            class="mt-12 grid gap-5 sm:grid-cols-2 lg:grid-cols-4"
+            data-list="pengurus.anggota"
+            data-tpl="tpl-pengurus"
+          ></div>
+        </div>
+      </section>
+
+      <!-- ============ PRESTASI ============ -->
+      <section id="prestasi" class="sec">
+        <span
+          class="deco -left-20 top-24 h-56 w-56 bg-flame/10"
+          data-speed="60"
+          aria-hidden="true"
+        ></span>
+        <div class="wrap relative">
+          <h2 class="sec-h" data-anim="up" data-text="prestasi.judul"></h2>
+          <div
+            class="mt-12 grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            data-list="prestasi.daftar"
+            data-tpl="tpl-prestasi"
+          ></div>
+        </div>
+      </section>
+
+      <!-- ============ JADWAL LATIHAN (6 baris kosong, script menambah kalau data lebih) ============ -->
+      <section id="jadwal" class="sec bg-white">
+        <div class="wrap">
+          <h2 class="sec-h" data-anim="up" data-text="jadwal.judul"></h2>
+          <!-- Pembungkus .jadwal-item: animasi naik (GSAP) tidak bentrok dengan animasi masuk tabel -->
+          <div class="jadwal-item mt-10">
+            <div
+              class="overflow-x-auto rounded-3xl bg-paper ring-1 ring-ink/10"
+              data-anim="up"
+            >
+              <table
+                class="w-full min-w-[360px] border-collapse text-left text-sm"
+              >
+                <thead>
+                  <tr class="bg-night text-white">
+                    <th
+                      class="w-1/3 px-5 py-4 font-bold"
+                      data-text="jadwal.kolom.pertemuan"
+                    ></th>
+                    <th
+                      class="px-5 py-4 font-bold"
+                      data-text="jadwal.kolom.materi"
+                    ></th>
+                  </tr>
+                </thead>
+                <tbody id="jadwalBody" data-table="jadwal.baris">
+                  <tr class="border-t border-ink/10">
+                    <td class="h-14 px-5" data-cell="pertemuan"></td>
+                    <td class="px-5" data-cell="materi"></td>
+                  </tr>
+                  <tr class="border-t border-ink/10">
+                    <td class="h-14 px-5" data-cell="pertemuan"></td>
+                    <td class="px-5" data-cell="materi"></td>
+                  </tr>
+                  <tr class="border-t border-ink/10">
+                    <td class="h-14 px-5" data-cell="pertemuan"></td>
+                    <td class="px-5" data-cell="materi"></td>
+                  </tr>
+                  <tr class="border-t border-ink/10">
+                    <td class="h-14 px-5" data-cell="pertemuan"></td>
+                    <td class="px-5" data-cell="materi"></td>
+                  </tr>
+                  <tr class="border-t border-ink/10">
+                    <td class="h-14 px-5" data-cell="pertemuan"></td>
+                    <td class="px-5" data-cell="materi"></td>
+                  </tr>
+                  <tr class="border-t border-ink/10">
+                    <td class="h-14 px-5" data-cell="pertemuan"></td>
+                    <td class="px-5" data-cell="materi"></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ GALERI (10 slot, bento) ============ -->
+      <section id="galeri" class="sec">
+        <div class="wrap">
+          <h2 class="sec-h" data-anim="up" data-text="galeri.judul"></h2>
+          <div
+            class="mt-12 grid auto-rows-[140px] grid-flow-dense grid-cols-2 gap-3 md:auto-rows-[170px] md:grid-cols-4 md:gap-4"
+          >
+            <figure class="slot col-span-2 row-span-2" data-anim="zoom">
+              <img data-img="galeri.foto.0" data-par alt="" />
+            </figure>
+            <figure class="slot" data-anim="zoom">
+              <img data-img="galeri.foto.1" data-par alt="" />
+            </figure>
+            <figure class="slot" data-anim="zoom">
+              <img data-img="galeri.foto.2" data-par alt="" />
+            </figure>
+            <figure class="slot row-span-2" data-anim="zoom">
+              <img data-img="galeri.foto.3" data-par alt="" />
+            </figure>
+            <figure class="slot col-span-2" data-anim="zoom">
+              <img data-img="galeri.foto.4" data-par alt="" />
+            </figure>
+            <figure class="slot" data-anim="zoom">
+              <img data-img="galeri.foto.5" data-par alt="" />
+            </figure>
+            <figure class="slot" data-anim="zoom">
+              <img data-img="galeri.foto.6" data-par alt="" />
+            </figure>
+            <figure class="slot col-span-2" data-anim="zoom">
+              <img data-img="galeri.foto.7" data-par alt="" />
+            </figure>
+            <figure class="slot" data-anim="zoom">
+              <img data-img="galeri.foto.8" data-par alt="" />
+            </figure>
+            <figure class="slot" data-anim="zoom">
+              <img data-img="galeri.foto.9" data-par alt="" />
+            </figure>
+          </div>
+        </div>
+      </section>
+
+      <!-- ============ PROJECT ============ -->
+      <section id="project" class="sec bg-white">
+        <span
+          class="deco -right-28 top-1/3 h-80 w-80 border-[3px] border-violet/25"
+          data-speed="-70"
+          aria-hidden="true"
+        ></span>
+        <div class="wrap relative">
+          <h2 class="sec-h" data-anim="up" data-text="project.judul"></h2>
+          <div
+            id="projectList"
+            class="mt-14 space-y-20 md:space-y-28"
+            data-list="project.daftar"
+            data-tpl="tpl-project"
+          ></div>
+        </div>
+      </section>
+    </main>
+
+    <!-- ============ FOOTER (minimalis: kiri brand + sosmed, kanan pendaftaran) ============ -->
+    <footer id="kontak" class="relative overflow-hidden bg-night text-white">
+      <div
+        class="h-1 w-full bg-gradient-to-r from-flame via-sun to-violet"
+        aria-hidden="true"
+      ></div>
+      <span
+        class="deco -right-24 -top-24 h-80 w-80 border-[3px] border-sun/15"
+        aria-hidden="true"
+      ></span>
+      <span
+        class="deco -bottom-32 -left-20 h-72 w-72 bg-violet/15 blur-2xl"
+        aria-hidden="true"
+      ></span>
+
+      <div class="wrap relative pb-10 pt-16 md:pt-20">
+        <div class="grid items-start gap-12 md:grid-cols-2 md:gap-0">
+          <!-- Kiri -->
+          <div class="md:pr-16" data-anim="up">
+            <div class="flex items-center gap-4">
+              <span class="slot slot-dark slot-round h-14 w-14 shrink-0"
+                ><img data-img="site.logo" alt=""
+              /></span>
+              <span class="text-xl font-extrabold" data-text="site.nama"></span>
+            </div>
+            <h2
+              class="mt-8 text-3xl font-extrabold leading-tight md:text-4xl"
+              data-text="footer.judul"
+            ></h2>
+            <p
+              class="mt-4 max-w-sm leading-relaxed text-white/65"
+              data-text="footer.deskripsi"
+            ></p>
+            <ul
+              class="mt-7 flex flex-wrap gap-3"
+              data-list="footer.sosmed"
+              data-tpl="tpl-sosmed"
+            ></ul>
+          </div>
+
+          <!-- Kanan: pendaftaran -->
+          <div
+            id="pendaftaran"
+            class="md:border-l md:border-white/10 md:pl-16"
+            data-anim="up"
+          >
+            <h3
+              class="text-2xl font-extrabold md:text-3xl"
+              data-text="pendaftaran.judul"
+            ></h3>
+            <p
+              class="mt-3 max-w-sm text-sm leading-relaxed text-white/60"
+              data-text="pendaftaran.teks"
+            ></p>
+
+            <div class="mt-7 flex max-w-sm flex-col gap-3">
+              <a
+                id="daftarBtn"
+                class="btn w-full"
+                target="_blank"
+                rel="noopener"
+              ></a>
+              <button
+                id="daftarCopy"
+                type="button"
+                class="btn w-full !bg-white"
+              ></button>
+            </div>
+
+            <div class="mt-7 max-w-sm">
+              <div class="flex items-end justify-between gap-4">
+                <span id="daftarBadge" class="font-bold"></span>
+                <span
+                  id="daftarCount"
+                  class="text-2xl font-extrabold tabular-nums"
+                ></span>
+              </div>
+              <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+                <div
+                  id="daftarBar"
+                  class="h-full rounded-full bg-gradient-to-r from-flame to-sun transition-all duration-700"
+                  style="width: 0"
+                ></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div
+          class="mt-14 flex flex-col gap-5 border-t border-white/10 pt-6 text-sm text-white/55 md:flex-row md:items-end md:justify-between"
+          data-anim="fade"
+        >
+          <div class="space-y-1">
+            <p data-text="site.footerCopy"></p>
+            <p>
+              <span
+                class="font-semibold text-white/75"
+                data-text="footer.kampus"
+              ></span>
+              <span data-text="footer.alamat"></span>
+              <a
+                class="font-semibold text-sun hover:underline"
+                target="_blank"
+                rel="noopener"
+                data-href="footer.mapUrl"
+                data-text="footer.mapLabel"
+              ></a>
+            </p>
+          </div>
+          <a
+            href="#hero"
+            class="inline-flex items-center gap-2 font-semibold text-white/80 transition hover:text-sun"
+          >
+            <span data-text="footer.keAtas"></span>
+            <svg
+              class="h-4 w-4"
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2.5"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+              aria-hidden="true"
+            >
+              <path d="M12 19V5M5 12l7-7 7 7" />
+            </svg>
+          </a>
+        </div>
       </div>
-    </div>
+    </footer>
 
-    <div class="mt-14 flex flex-col gap-5 border-t border-white/10 pt-6 text-sm text-white/55 md:flex-row md:items-end md:justify-between" data-anim="fade">
-      <div class="space-y-1">
-        <p data-text="site.footerCopy"></p>
-        <p>
-          <span class="font-semibold text-white/75" data-text="footer.kampus"></span>
-          <span data-text="footer.alamat"></span>
-          <a class="font-semibold text-sun hover:underline" target="_blank" rel="noopener" data-href="footer.mapUrl" data-text="footer.mapLabel"></a>
-        </p>
+    <!-- ============ TEMPLATES (dikloning oleh script.js) ============ -->
+    <template id="tpl-nav">
+      <a data-text="label" data-href="href"></a>
+    </template>
+
+    <template id="tpl-hero">
+      <div class="hero-slide"><img data-img="." alt="" /></div>
+    </template>
+
+    <template id="tpl-tile">
+      <article class="tile" data-tile>
+        <div class="slot aspect-[4/3]">
+          <img data-img="foto" data-par alt="" />
+        </div>
+        <h3 class="mt-5 px-1 text-xl font-extrabold" data-text="judul"></h3>
+        <p
+          class="mt-2 px-1 pb-2 text-sm leading-relaxed text-ink/70"
+          data-text="teks"
+        ></p>
+      </article>
+    </template>
+
+    <template id="tpl-misi">
+      <li data-anim="up" data-text="."></li>
+    </template>
+
+    <!-- Pembungkus .pengurus-item supaya animasi geser (GSAP) tidak bentrok dengan animasi masuk kartu -->
+    <template id="tpl-pengurus">
+      <div class="pengurus-item">
+        <article
+          class="pengurus-card rounded-3xl bg-paper p-3 ring-1 ring-ink/5"
+          data-anim="up"
+        >
+          <div class="slot aspect-square">
+            <img data-img="foto" data-par alt="" />
+          </div>
+          <h3 class="mt-4 px-1 font-extrabold" data-text="nama"></h3>
+          <p class="px-1 pb-2 text-sm text-ink/65" data-text="jabatan"></p>
+        </article>
       </div>
-      <a href="#hero" class="inline-flex items-center gap-2 font-semibold text-white/80 transition hover:text-sun">
-        <span data-text="footer.keAtas"></span>
-        <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
-      </a>
-    </div>
-  </div>
-</footer>
+    </template>
 
-
-<!-- ============ TEMPLATES (dikloning oleh script.js) ============ -->
-<template id="tpl-nav">
-  <a data-text="label" data-href="href"></a>
-</template>
-
-<template id="tpl-hero">
-  <div class="hero-slide"><img data-img="." alt=""></div>
-</template>
-
-<template id="tpl-tile">
-  <article class="tile" data-tile>
-    <div class="slot aspect-[4/3]"><img data-img="foto" data-par alt=""></div>
-    <h3 class="mt-5 px-1 text-xl font-extrabold" data-text="judul"></h3>
-    <p class="mt-2 px-1 pb-2 text-sm leading-relaxed text-ink/70" data-text="teks"></p>
-  </article>
-</template>
-
-<template id="tpl-misi">
-  <li data-anim="up" data-text="."></li>
-</template>
-
-<!-- Pembungkus .pengurus-item supaya animasi geser (GSAP) tidak bentrok dengan animasi masuk kartu -->
-<template id="tpl-pengurus">
-  <div class="pengurus-item">
-    <article class="pengurus-card rounded-3xl bg-paper p-3 ring-1 ring-ink/5" data-anim="up">
-      <div class="slot aspect-square"><img data-img="foto" data-par alt=""></div>
-      <h3 class="mt-4 px-1 font-extrabold" data-text="nama"></h3>
-      <p class="px-1 pb-2 text-sm text-ink/65" data-text="jabatan"></p>
-    </article>
-  </div>
-</template>
-
-<!-- Pembungkus .prestasi-item: animasi naik (GSAP) tidak bentrok dengan animasi masuk card -->
-<template id="tpl-prestasi">
-  <div class="prestasi-item">
-    <article class="rounded-3xl border border-ink/5 bg-white p-4" data-anim="up">
-      <div class="slot aspect-[16/10]"><img data-img="foto" data-par alt=""></div>
-      <div class="mt-5 px-1 pb-1">
-        <span class="inline-block rounded-full bg-sun px-3 py-1 text-xs font-bold" data-text="tahun"></span>
-        <h3 class="mt-3 text-lg font-extrabold leading-snug" data-text="judul"></h3>
-        <p class="mt-2 text-sm leading-relaxed text-ink/70" data-text="deskripsi"></p>
+    <!-- Pembungkus .prestasi-item: animasi naik (GSAP) tidak bentrok dengan animasi masuk card -->
+    <template id="tpl-prestasi">
+      <div class="prestasi-item">
+        <article
+          class="rounded-3xl border border-ink/5 bg-white p-4"
+          data-anim="up"
+        >
+          <div class="slot aspect-[16/10]">
+            <img data-img="foto" data-par alt="" />
+          </div>
+          <div class="mt-5 px-1 pb-1">
+            <span
+              class="inline-block rounded-full bg-sun px-3 py-1 text-xs font-bold"
+              data-text="tahun"
+            ></span>
+            <h3
+              class="mt-3 text-lg font-extrabold leading-snug"
+              data-text="judul"
+            ></h3>
+            <p
+              class="mt-2 text-sm leading-relaxed text-ink/70"
+              data-text="deskripsi"
+            ></p>
+          </div>
+        </article>
       </div>
-    </article>
-  </div>
-</template>
+    </template>
 
-<template id="tpl-project">
-  <article class="grid items-center gap-8 md:grid-cols-2 md:gap-14">
-    <div class="project-photo" data-speed="25">
-      <div class="slot aspect-[4/3]" data-anim="left"><img data-img="foto" data-par alt=""></div>
-    </div>
-    <div data-speed="-12">
-      <div data-anim="right">
-        <h3 class="text-2xl font-extrabold leading-tight md:text-3xl" data-text="judul"></h3>
-        <p class="mt-3 max-w-prose leading-relaxed text-ink/75" data-text="deskripsi"></p>
-        <ul class="mt-5 flex flex-wrap gap-2" data-list="tim" data-tpl="tpl-chip"></ul>
-      </div>
-    </div>
-  </article>
-</template>
+    <template id="tpl-project">
+      <article class="grid items-center gap-8 md:grid-cols-2 md:gap-14">
+        <div class="project-photo" data-speed="25">
+          <div class="slot aspect-[4/3]" data-anim="left">
+            <img data-img="foto" data-par alt="" />
+          </div>
+        </div>
+        <div data-speed="-12">
+          <div data-anim="right">
+            <h3
+              class="text-2xl font-extrabold leading-tight md:text-3xl"
+              data-text="judul"
+            ></h3>
+            <p
+              class="mt-3 max-w-prose leading-relaxed text-ink/75"
+              data-text="deskripsi"
+            ></p>
+            <ul
+              class="mt-5 flex flex-wrap gap-2"
+              data-list="tim"
+              data-tpl="tpl-chip"
+            ></ul>
+          </div>
+        </div>
+      </article>
+    </template>
 
-<template id="tpl-chip">
-  <li class="rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-sun" data-text="."></li>
-</template>
+    <template id="tpl-chip">
+      <li
+        class="rounded-full bg-ink px-3 py-1.5 text-xs font-semibold text-sun"
+        data-text="."
+      ></li>
+    </template>
 
-<template id="tpl-sosmed">
-  <li><a class="btn-ghost" target="_blank" rel="noopener" data-href="url" data-text="nama"></a></li>
-</template>
+    <template id="tpl-sosmed">
+      <li>
+        <a
+          class="btn-ghost"
+          target="_blank"
+          rel="noopener"
+          data-href="url"
+          data-text="nama"
+        ></a>
+      </li>
+    </template>
 
-
-
-<!-- ============ SCRIPTS ============ -->
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
-<script src="script.js"></script>
-</body>
+    <!-- ============ SCRIPTS ============ -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
+    <script src="script.js"></script>
+  </body>
 </html>
