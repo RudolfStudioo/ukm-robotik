@@ -12,10 +12,6 @@
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
   const hasGsap = typeof gsap !== 'undefined' && typeof ScrollTrigger !== 'undefined';
   const motion = hasGsap && !reduce;
-
-  const SUPABASE_URL = 'https://layiqqvtgxfqiumqxqec.supabase.co'; // Ganti dengan URL Project Supabase Anda
-  const SUPABASE_ANON_KEY = 'sb_publishable_EUunAjYYibF2lWCgLZch9Q_J_f3Uekt';     // Ganti dengan anon/public key Supabase Anda
-
   if (hasGsap) {
     gsap.registerPlugin(ScrollTrigger);
     ScrollTrigger.config({ ignoreMobileResize: true }); // bar alamat HP naik-turun tidak memicu refresh
@@ -102,26 +98,43 @@
     });
   }
 
-  /* ---------- pendaftaran: status dari kuota vs terdaftar ---------- */
+  /* ---------- pendaftaran (di footer): tombol daftar, salin link, status kuota ---------- */
   function pendaftaran(data) {
     const sec = $('#pendaftaran'), d = data.pendaftaran;
     if (!sec) return;
     if (!d) { sec.hidden = true; return; }
     const kuota = Number(d.kuota) || 0, isi = Number(d.terdaftar) || 0;
     const penuh = kuota > 0 && isi >= kuota;
-    const badge = $('#daftarBadge'), btn = $('#daftarBtn');
-    $('#daftarCount').textContent = isi + ' / ' + kuota;
+    const badge = $('#daftarBadge'), btn = $('#daftarBtn'), cp = $('#daftarCopy');
+    $('#daftarCount').textContent = isi + '/' + kuota;
     $('#daftarBar').style.width = (kuota ? Math.min(100, (isi / kuota) * 100) : 0) + '%';
     badge.textContent = penuh ? d.badgePenuh : d.badgeBuka;
-    badge.className = 'inline-block rounded-full px-3 py-1 text-xs font-bold ' + (penuh ? 'bg-flame text-white' : 'bg-sun text-ink');
+    badge.className = 'font-bold ' + (penuh ? 'text-flame' : 'text-sun');
     btn.textContent = penuh ? d.tombolPenuh : d.tombolBuka;
-    if (penuh || !d.formUrl) {
-      btn.removeAttribute('href');
-      btn.setAttribute('aria-disabled', 'true');
-      btn.classList.add('opacity-50', 'pointer-events-none');
-    } else {
-      btn.href = d.formUrl;
-    }
+    const salin = d.tombolSalin || 'Salin Link Pendaftaran';
+    cp.textContent = salin;
+
+    const lock = el => {
+      el.removeAttribute('href');
+      el.setAttribute('aria-disabled', 'true');
+      if ('disabled' in el) el.disabled = true;
+      el.classList.add('opacity-50', 'pointer-events-none');
+    };
+    if (penuh || !d.formUrl) { lock(btn); lock(cp); return; }
+
+    btn.href = d.formUrl;
+    cp.addEventListener('click', async () => {
+      try { await navigator.clipboard.writeText(d.formUrl); }
+      catch (e) { // fallback untuk browser tanpa clipboard API
+        const t = document.createElement('textarea');
+        t.value = d.formUrl; t.style.position = 'fixed'; t.style.opacity = '0';
+        document.body.appendChild(t); t.select();
+        try { document.execCommand('copy'); } catch (e2) {}
+        t.remove();
+      }
+      cp.textContent = d.tersalin || 'Link tersalin \u2713';
+      setTimeout(() => { cp.textContent = salin; }, 2000);
+    });
   }
 
   /* ---------- hero: foto latar ganti tiap 5 detik ---------- */
@@ -278,27 +291,27 @@
       });
     });
     /* Foto memudar (tepi lembut + transparan) dari kiri ke kanan saat di-scroll ke bawah.
-       Kalau foto ada di dalam card ([data-wipe-card]), yang memudar SELURUH card supaya garis card tidak tertinggal.
-       Kartu pengurus dikecualikan (sudah punya animasi geser sendiri). */
+       Kalau foto ada di dalam card ([data-wipe-card]), yang memudar SELURUH card.
+       Pengurus, prestasi & project dikecualikan (punya animasi sendiri). Galeri juga dikecualikan: cukup fade-in. */
     const wiped = new Set();
     $$('.slot').forEach(slot => {
-      if (slot.classList.contains('slot-round') || slot.closest('.tile, .logo-box, #loader, #nav, #kontak, [data-exit], .pengurus-item')) return;
+      if (slot.classList.contains('slot-round') || slot.closest('.tile, .logo-box, #loader, #nav, #kontak, [data-exit], .pengurus-item, .prestasi-item, #galeri, #project')) return;
       if (!$('img[data-par]', slot)) return;
       const el = slot.closest('[data-wipe-card]') || slot;
       if (wiped.has(el)) return;
       wiped.add(el);
-      el.classList.add('wipe'); // gaya mask + opacity ada di index.html (.wipe)
+      el.classList.add('wipe');
       gsap.fromTo(el, { '--p': 0 }, {
         '--p': 1, ease: 'none', immediateRender: false,
         scrollTrigger: { trigger: el, start: 'center 40%', end: 'bottom 10%', scrub: true }
       });
     });
-    /* Kartu pengurus: ganjil keluar ke kiri, genap ke kanan, sambil memudar */
-    $$('#pengurus .pengurus-item').forEach((item, i) => {
-      const dir = i % 2 ? 1 : -1;
-      gsap.fromTo(item, { x: 0, opacity: 1 }, {
-        x: () => dir * window.innerWidth * 0.5, opacity: 0, ease: 'none', immediateRender: false,
-        scrollTrigger: { trigger: item, start: 'center 35%', end: 'bottom 5%', scrub: true, invalidateOnRefresh: true }
+    /* Kartu pengurus, prestasi & project (foto + teks): naik cepat seperti ketarik ke atas sambil memudar, sama di HP dan desktop */
+    $$('#pengurus .pengurus-item, #prestasi .prestasi-item, #projectList > article').forEach(item => {
+      gsap.fromTo(item, { y: 0, opacity: 1 }, {
+        y: () => -Math.min(260, window.innerHeight * 0.3),
+        opacity: 0, ease: 'power1.in', immediateRender: false,
+        scrollTrigger: { trigger: item, start: 'center 40%', end: 'bottom 5%', scrub: 0.3, invalidateOnRefresh: true }
       });
     });
     /* Baris dosen (foto + teks): keluar ke samping sambil memudar, seperti teks hero.
@@ -399,28 +412,13 @@
       let data = {};
       try {
         const ctl = new AbortController();
-        const to = setTimeout(() => ctl.abort(), 5000);
-        
-        // Ambil data dari Supabase REST API
-        const res = await fetch(`${SUPABASE_URL}/rest/v1/site_config?id=eq.1&select=content`, {
-          signal: ctl.signal,
-          headers: {
-            'apikey': SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${SUPABASE_ANON_KEY}`
-          }
-        });
+        const to = setTimeout(() => ctl.abort(), 4000);
+        const res = await fetch('data.json', { signal: ctl.signal, cache: 'no-cache' });
         clearTimeout(to);
-
-        if (res.ok) {
-          const result = await res.json();
-          if (result && result.length > 0) {
-            data = result[0].content;
-          }
-        } else {
-          console.warn('Gagal mengambil data dari Supabase (status ' + res.status + ').');
-        }
+        if (res.ok) data = await res.json();
+        else console.warn('data.json tidak ditemukan (status ' + res.status + '). Menampilkan kerangka kosong.');
       } catch (err) {
-        console.warn('Koneksi ke Supabase bermasalah. Menampilkan kerangka.', err);
+        console.warn('data.json tidak bisa dimuat. Pakai Live Server dan cek isi JSON-nya. Menampilkan kerangka kosong.', err);
       }
 
       render(document, data);

@@ -50,8 +50,9 @@
   .slot.has-img { border-color: transparent; background: none; }
   .slot.has-img > img { opacity: 1; }
 
-  /* Foto memudar dari kiri ke kanan saat scroll: tepi lembut (mask) + makin transparan. --p (0..1) digerakkan script.js */
-  .slot.wipe {
+  /* Memudar dari kiri ke kanan saat scroll: tepi lembut (mask) + makin transparan. --p (0..1) digerakkan script.js.
+     Class .wipe dipasang ke FOTO, atau ke SELURUH CARD kalau card punya atribut data-wipe-card. */
+  .wipe {
     --p: 0;
     opacity: calc(1 - var(--p) * .45);
     -webkit-mask-image: linear-gradient(90deg, transparent calc(var(--p) * 140% - 40%), #000 calc(var(--p) * 140%));
@@ -408,17 +409,17 @@
 </main>
 
 
-<!-- ============ FOOTER ============ -->
+<!-- ============ FOOTER (minimalis: kiri brand + sosmed, kanan pendaftaran) ============ -->
 <footer id="kontak" class="relative overflow-hidden bg-night text-white">
   <div class="h-1 w-full bg-gradient-to-r from-flame via-sun to-violet" aria-hidden="true"></div>
   <span class="deco -right-24 -top-24 h-80 w-80 border-[3px] border-sun/15" aria-hidden="true"></span>
   <span class="deco -bottom-32 -left-20 h-72 w-72 bg-violet/15 blur-2xl" aria-hidden="true"></span>
 
-  <div class="wrap relative pb-10 pt-20">
-    <div class="grid gap-14 md:grid-cols-12">
+  <div class="wrap relative pb-10 pt-16 md:pt-20">
+    <div class="grid items-start gap-12 md:grid-cols-2 md:gap-0">
 
-      <!-- Brand -->
-      <div class="md:col-span-5" data-anim="up">
+      <!-- Kiri -->
+      <div class="md:pr-16" data-anim="up">
         <div class="flex items-center gap-4">
           <span class="slot slot-dark slot-round h-14 w-14 shrink-0"><img data-img="site.logo" alt=""></span>
           <span class="text-xl font-extrabold" data-text="site.nama"></span>
@@ -428,33 +429,37 @@
         <ul class="mt-7 flex flex-wrap gap-3" data-list="footer.sosmed" data-tpl="tpl-sosmed"></ul>
       </div>
 
-      <!-- Navigasi -->
-      <div class="md:col-span-2" data-anim="up">
-        <h3 class="text-sm font-bold uppercase tracking-widest text-sun" data-text="footer.menuJudul"></h3>
-        <ul class="mt-5 space-y-3 text-sm text-white/70" data-list="nav" data-tpl="tpl-fnav"></ul>
-      </div>
+      <!-- Kanan: pendaftaran -->
+      <div id="pendaftaran" class="md:border-l md:border-white/10 md:pl-16" data-anim="up">
+        <h3 class="text-2xl font-extrabold md:text-3xl" data-text="pendaftaran.judul"></h3>
+        <p class="mt-3 max-w-sm text-sm leading-relaxed text-white/60" data-text="pendaftaran.teks"></p>
 
-      <!-- Alamat -->
-      <div class="md:col-span-5" data-anim="up">
-        <h3 class="text-sm font-bold uppercase tracking-widest text-sun" data-text="footer.alamatJudul"></h3>
-        <div class="mt-5 rounded-3xl bg-white/5 p-6 ring-1 ring-white/10">
-          <div class="flex gap-4">
-            <span class="grid h-11 w-11 flex-none place-items-center rounded-2xl bg-sun text-ink">
-              <svg class="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M21 10c0 7-9 13-9 13S3 17 3 10a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
-            </span>
-            <div>
-              <p class="font-extrabold" data-text="footer.kampus"></p>
-              <p class="mt-1 text-sm leading-relaxed text-white/70" data-text="footer.alamat"></p>
-              <p class="mt-3 text-sm text-white/70" data-text="footer.telp"></p>
-            </div>
+        <div class="mt-7 flex max-w-sm flex-col gap-3">
+          <a id="daftarBtn" class="btn w-full" target="_blank" rel="noopener"></a>
+          <button id="daftarCopy" type="button" class="btn w-full !bg-white"></button>
+        </div>
+
+        <div class="mt-7 max-w-sm">
+          <div class="flex items-end justify-between gap-4">
+            <span id="daftarBadge" class="font-bold"></span>
+            <span id="daftarCount" class="text-2xl font-extrabold tabular-nums"></span>
           </div>
-          <a class="btn mt-6" target="_blank" rel="noopener" data-href="footer.mapUrl" data-text="footer.mapLabel"></a>
+          <div class="mt-3 h-1.5 overflow-hidden rounded-full bg-white/15">
+            <div id="daftarBar" class="h-full rounded-full bg-gradient-to-r from-flame to-sun transition-all duration-700" style="width:0"></div>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="mt-16 flex flex-col gap-3 border-t border-white/10 pt-6 text-sm text-white/55 md:flex-row md:items-center md:justify-between" data-anim="fade">
-      <p data-text="site.footerCopy"></p>
+    <div class="mt-14 flex flex-col gap-5 border-t border-white/10 pt-6 text-sm text-white/55 md:flex-row md:items-end md:justify-between" data-anim="fade">
+      <div class="space-y-1">
+        <p data-text="site.footerCopy"></p>
+        <p>
+          <span class="font-semibold text-white/75" data-text="footer.kampus"></span>
+          <span data-text="footer.alamat"></span>
+          <a class="font-semibold text-sun hover:underline" target="_blank" rel="noopener" data-href="footer.mapUrl" data-text="footer.mapLabel"></a>
+        </p>
+      </div>
       <a href="#hero" class="inline-flex items-center gap-2 font-semibold text-white/80 transition hover:text-sun">
         <span data-text="footer.keAtas"></span>
         <svg class="h-4 w-4" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 19V5M5 12l7-7 7 7"/></svg>
@@ -485,23 +490,29 @@
   <li data-anim="up" data-text="."></li>
 </template>
 
+<!-- Pembungkus .pengurus-item supaya animasi geser (GSAP) tidak bentrok dengan animasi masuk kartu -->
 <template id="tpl-pengurus">
-  <article class="pengurus-card rounded-3xl bg-paper p-3 ring-1 ring-ink/5" data-anim="up">
-    <div class="slot aspect-square"><img data-img="foto" data-par alt=""></div>
-    <h3 class="mt-4 px-1 font-extrabold" data-text="nama"></h3>
-    <p class="px-1 pb-2 text-sm text-ink/65" data-text="jabatan"></p>
-  </article>
+  <div class="pengurus-item">
+    <article class="pengurus-card rounded-3xl bg-paper p-3 ring-1 ring-ink/5" data-anim="up">
+      <div class="slot aspect-square"><img data-img="foto" data-par alt=""></div>
+      <h3 class="mt-4 px-1 font-extrabold" data-text="nama"></h3>
+      <p class="px-1 pb-2 text-sm text-ink/65" data-text="jabatan"></p>
+    </article>
+  </div>
 </template>
 
+<!-- Pembungkus .prestasi-item: animasi naik (GSAP) tidak bentrok dengan animasi masuk card -->
 <template id="tpl-prestasi">
-  <article class="rounded-3xl bg-white p-4 ring-1 ring-ink/5" data-anim="up">
-    <div class="slot aspect-[16/10]"><img data-img="foto" data-par alt=""></div>
-    <div class="mt-5 px-1 pb-1">
-      <span class="inline-block rounded-full bg-sun px-3 py-1 text-xs font-bold" data-text="tahun"></span>
-      <h3 class="mt-3 text-lg font-extrabold leading-snug" data-text="judul"></h3>
-      <p class="mt-2 text-sm leading-relaxed text-ink/70" data-text="deskripsi"></p>
-    </div>
-  </article>
+  <div class="prestasi-item">
+    <article class="rounded-3xl border border-ink/5 bg-white p-4" data-anim="up">
+      <div class="slot aspect-[16/10]"><img data-img="foto" data-par alt=""></div>
+      <div class="mt-5 px-1 pb-1">
+        <span class="inline-block rounded-full bg-sun px-3 py-1 text-xs font-bold" data-text="tahun"></span>
+        <h3 class="mt-3 text-lg font-extrabold leading-snug" data-text="judul"></h3>
+        <p class="mt-2 text-sm leading-relaxed text-ink/70" data-text="deskripsi"></p>
+      </div>
+    </article>
+  </div>
 </template>
 
 <template id="tpl-project">
@@ -527,9 +538,6 @@
   <li><a class="btn-ghost" target="_blank" rel="noopener" data-href="url" data-text="nama"></a></li>
 </template>
 
-<template id="tpl-fnav">
-  <li><a class="transition hover:text-sun" data-href="href" data-text="label"></a></li>
-</template>
 
 
 <!-- ============ SCRIPTS ============ -->
